@@ -1,0 +1,852 @@
+<title>Breaking Point Grid</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: Swiss poster column on paper; every section opens with a header rule, columns split by 2px ink hairlines, network drawn as a transit map. */
+:root{
+  --paper:#F2EFE8;
+  --ink:#141414;
+  --red:#E2231A;
+  --red-on-ink:#FF5A4E;
+  --grey:#5E5E5E;
+  --warm:#A8A49B;
+  --band:#DCD6C8;
+  --f-display:"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+html{background:var(--paper)}
+html.out{--paper:#141414;--ink:#F2EFE8;--grey:#A8A49B;--band:#3A3833;color-scheme:dark}
+html.out .btn.primary{background:var(--ink);color:var(--paper)}
+html.out .btn.red,html.out .trip[aria-pressed="true"]{color:#F2EFE8}
+html.out .reveal-num,html.out .life .when,html.out .mcard .wk{color:var(--red-on-ink)}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-display);font-size:17px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:balance;line-height:1}
+h1{font-size:clamp(44px,12.5vw,76px);letter-spacing:-.045em}
+h2{font-size:clamp(30px,8vw,40px);letter-spacing:-.035em}
+h3{font-size:21px;letter-spacing:-.02em;font-weight:700}
+p{margin:0}
+[hidden]{display:none!important}
+.sym{text-transform:none;letter-spacing:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.label{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey)}
+a{color:var(--red)}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.small{font-size:15px}
+.muted{color:var(--grey)}
+
+/* header rule opening every section */
+.rule{display:flex;justify-content:space-between;gap:12px;padding-bottom:8px;border-bottom:2px solid var(--ink);
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+section,header{display:flex;flex-direction:column;gap:16px}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px 10px;border-bottom:2px solid var(--ink)}
+.hero{gap:18px;padding-top:4px}
+.hero .lede{font-size:19px;max-width:32em}
+.hero .big230{font-weight:800;font-size:clamp(96px,30vw,180px);letter-spacing:-.07em;line-height:.85;color:var(--red)}
+.hero .big230 small{font-size:.3em;letter-spacing:-.02em;color:var(--ink)}
+
+/* sliders: ink track, red station thumb */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--ink)}
+input[type=range]::-moz-range-track{height:4px;background:var(--ink)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;margin-top:-13px;border-radius:50%;background:var(--red);border:6px solid var(--ink)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--red);border:6px solid var(--ink)}
+input[type=range]:disabled{opacity:.3}
+.readout{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.readout .big{font-weight:800;font-size:clamp(64px,19vw,96px);letter-spacing:-.06em;line-height:.9}
+.readout .unit{font-family:var(--f-mono);font-size:16px}
+.btn{font-family:var(--f-display);font-weight:700;font-size:18px;border:2px solid var(--ink);border-radius:0;padding:10px 16px;min-height:48px;cursor:pointer;background:transparent;color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.red{background:var(--red);border-color:var(--red);color:var(--paper)}
+.btn:disabled{opacity:.35;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.nudge .btn{min-width:56px;font-family:var(--f-mono);font-size:16px;padding:8px 10px}
+.chips{display:flex;gap:0;flex-wrap:wrap;border:2px solid var(--ink)}
+.chip{flex:1 1 auto;font-family:var(--f-display);font-weight:700;font-size:15px;border:0;border-right:2px solid var(--ink);padding:10px 12px;min-height:46px;cursor:pointer;background:transparent;color:var(--ink)}
+.chip:last-child{border-right:0}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.trip{font-size:15px;min-height:40px;padding:6px 12px}
+.trip[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--paper)}
+.sim-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.status{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:5px 8px;border:2px solid var(--ink);white-space:nowrap}
+.status.warn{background:var(--band)}
+.status.down{background:var(--red);border-color:var(--red);color:#F2EFE8}
+#net{width:100%;height:auto;display:block}
+
+/* meters: hairline columns, no boxes */
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink)}
+.meter{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px;min-width:0;border-bottom:2px solid var(--ink)}
+.meter:first-child{padding-left:0}
+.meter+.meter{border-left:2px solid var(--ink)}
+.meter .label{letter-spacing:.08em}
+.meter .v{font-weight:800;font-size:24px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.meter .v small{font-family:var(--f-mono);font-size:13px;font-weight:400;letter-spacing:0;color:var(--grey)}
+.meter.edge .bar{height:6px;background:var(--band);overflow:hidden;margin-top:6px}
+.meter.edge .bar i{display:block;height:100%;background:var(--ink);width:100%}
+
+
+.homes ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.homes li{display:grid;grid-template-columns:18px minmax(0,1fr);column-gap:10px;padding-block:8px;border-top:1px solid var(--ink)}
+.homes li::before{content:"";width:12px;height:12px;border-radius:50%;margin-top:5px;grid-row:span 2;box-sizing:border-box;border:3px solid var(--ink)}
+.homes li.h-warn::before{background:var(--band)}
+.homes li.h-bad::before,.homes li.h-out::before{background:var(--red);border-color:var(--red)}
+.homes li b{font-weight:700}
+.homes li span{color:var(--grey);font-size:15px}
+.blackout{font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;color:var(--red);border-top:2px solid var(--red);padding-top:8px}
+html.out .blackout{color:var(--red-on-ink);border-top-color:var(--red-on-ink)}
+#curve{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12px;color:var(--grey)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:20px;height:0;border-top:4px solid var(--ink)}
+.legend i.dash{border-top:2px dashed var(--grey)}
+.legend i.band{height:10px;border:0;background:var(--band)}
+
+.reveal-num{font-weight:800;font-size:clamp(84px,25vw,150px);letter-spacing:-.07em;line-height:.85;color:var(--red)}
+.verdict{font-size:20px;font-weight:700;letter-spacing:-.01em}
+table{border-collapse:collapse;width:100%;font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink)}
+th,td{color:var(--ink);text-align:right;padding:6px 6px;border-bottom:1px solid var(--ink);white-space:nowrap}
+th{font-weight:700;font-size:11px;letter-spacing:.04em;border-bottom:2px solid var(--ink)}
+th:first-child,td:first-child{text-align:left}
+.tbl{overflow-x:auto}
+
+.mcard{display:flex;flex-direction:column;gap:8px;padding-block:6px 14px;border-bottom:1px solid var(--ink)}
+.mcard .wk{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--red);text-transform:uppercase}
+.eq{font-family:var(--f-mono);font-size:15px;border-left:4px solid var(--red);padding:6px 12px;overflow-x:auto;white-space:nowrap}
+.eq em{font-style:italic}
+.ymat{font-family:var(--f-mono);font-size:12px;color:var(--grey);overflow-x:auto;white-space:pre}
+.life article{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;padding-block:14px;border-bottom:1px solid var(--ink)}
+.life .when{font-weight:800;font-size:24px;letter-spacing:-.03em;color:var(--red);line-height:1}
+.life h3{margin-bottom:4px}
+.life p{color:var(--grey);font-size:15px}
+.debate{background:#141414;color:#F2EFE8;padding:20px max(16px,env(safe-area-inset-left,0px));margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));gap:12px}
+.debate .rule{border-bottom-color:#F2EFE8;color:var(--warm)}
+.debate h2{color:#F2EFE8}
+.debate .mono{color:var(--red-on-ink)}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink)}
+.facts>div{display:flex;flex-direction:column;gap:2px;padding:10px 10px 0;border-left:2px solid var(--ink);min-width:0}
+.facts>div:first-child{border-left:0;padding-left:0}
+.fnum{font-weight:800;font-size:clamp(22px,6.5vw,32px);letter-spacing:-.04em;line-height:1}
+.facts.inv{border-top-color:#F2EFE8}
+.facts.inv>div{border-left-color:#F2EFE8}
+.facts.inv .label{color:var(--warm)}
+.dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:8px;align-items:end}
+.dash-l{display:flex;flex-direction:column;gap:2px;min-width:0}
+#gauge{width:100%;height:auto;display:block}
+.homes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.homes>div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-left:2px solid var(--ink)}
+.homes>div:first-child{border-left:0}
+.homes svg{width:44px;height:44px}
+.homes .w{font-weight:700;font-size:15px}
+.homes .bad .w{color:var(--red)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.steps .mcard{border-bottom:0;border-left:2px solid var(--ink);padding:4px 8px 0}
+.steps .mcard:first-child{border-left:0;padding-left:0}
+.steps .eq{font-size:13px;white-space:normal;padding:4px 8px}
+.steps h3{font-size:17px}
+@keyframes flick{0%,100%{opacity:1}40%{opacity:.25}55%{opacity:.9}70%{opacity:.4}}
+.flick{animation:flick .9s steps(1) infinite}
+details summary{cursor:pointer;padding-block:8px}
+body,.wrap,section,html{transition:background-color .25s ease-out,color .25s ease-out}
+.hero2{background:#141414;color:#F2EFE8;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:0 max(16px,env(safe-area-inset-left,0px)) 28px;margin-bottom:36px}
+.hero2-in{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.h2top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px 10px;border-bottom:2px solid #F2EFE8;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--warm)}
+.hero2 h1{color:#F2EFE8;font-size:clamp(48px,14vw,88px);letter-spacing:-.05em;line-height:.92}
+.hero-sub{font-size:19px;color:var(--warm);max-width:28em}
+.hero-line{width:100%;height:auto;display:block}
+@keyframes heroflow{to{stroke-dashoffset:-32}}
+.hero-flow{animation:heroflow .8s linear infinite}
+.param{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.param>div{display:flex;flex-direction:column;gap:2px;padding:8px 10px 10px;min-width:0}
+.param>div:first-child{padding-left:0;border-right:2px solid var(--ink)}
+.param b{font-weight:800;font-size:17px;letter-spacing:-.01em;color:var(--red)}
+.param span:not(.label){font-size:15px}
+@keyframes hlmove{to{stroke-dashoffset:-20}}
+.hl{animation:hlmove 1s linear infinite}
+.chip{font-size:14px;line-height:1.15}
+.guessbox{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.guessbox .label{color:var(--red);font-weight:700}
+.guessbox .big{font-size:clamp(48px,14vw,72px)}
+.gopen{display:flex;flex-direction:column;gap:6px}
+.glocked{font-size:15px;font-weight:700;margin:0}
+.foot{font-family:var(--f-mono);font-size:12px;color:var(--grey);border-top:2px solid var(--ink);padding-top:12px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<div class="hero2">
+  <div class="hero2-in">
+    <div class="h2top"><span>Mathematics for Engineers · M1</span><span>Live power-flow model</span></div>
+    <svg class="hero-line" viewBox="0 0 360 60" aria-hidden="true">
+      <line x1="20" y1="30" x2="340" y2="30" stroke="#E2231A" stroke-width="12" stroke-linecap="round"/>
+      <line class="hero-flow" x1="20" y1="30" x2="340" y2="30" stroke="#141414" stroke-width="2.5" stroke-dasharray="4 12"/>
+      <circle cx="20" cy="30" r="10" fill="#141414" stroke="#F2EFE8" stroke-width="6"/>
+      <circle cx="340" cy="30" r="10" fill="#141414" stroke="#F2EFE8" stroke-width="6"/>
+    </svg>
+    <h1>Why do the lights go out?</h1>
+    <p class="hero-sub">Slide the demand. Watch the voltage. Find the point where the maths says no.</p>
+    <div class="facts inv">
+      <div><span class="fnum">230 V</span><span class="label">your socket</span></div>
+      <div><span class="fnum">2 kW</span><span class="label">one home ≈ one kettle</span></div>
+      <div><span class="fnum">1 MW</span><span class="label">≈ 500 homes</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section id="two">
+    <div class="rule"><span>01 · One line</span><span>1 / 6</span></div>
+    <div class="sim-head"><h2>Raise the town&rsquo;s demand</h2><span class="status" id="tbStatus">OK</span></div>
+    <div class="guessbox" id="tgBox">
+      <span class="label" id="tgQ">Guess first: how many MW can one line bring to the town?</span>
+      <div class="gopen" id="tgOpen">
+        <div class="readout"><span class="big" id="tgVal">5</span><span class="unit">MW</span><span class="small muted mono" id="tgHomes"></span></div>
+        <input type="range" id="tgSlider" min="1" max="30" step="0.5" value="5" aria-label="Your guess in megawatts">
+        <div class="row"><button class="btn primary" id="tgLock">Lock my guess</button><button class="btn" id="tgSkip">Skip</button></div>
+      </div>
+      <p class="glocked mono" id="tgLocked" hidden></p>
+    </div>
+    <svg id="tbNet" viewBox="0 0 360 170" role="img" aria-label="A power station feeding a town over one line"></svg>
+    <div class="dash">
+      <div class="dash-l">
+        <span class="label">Town demand</span>
+        <div class="readout"><span class="big" id="tbVal">5.0</span><span class="unit">MW</span></div>
+        <span class="small muted mono" id="tbHomes">≈ 2,500 homes</span>
+      </div>
+      <svg id="tbGauge" viewBox="0 0 200 124" role="img" aria-label="Socket voltage dial"></svg>
+    </div>
+    <input type="range" id="tbSlider" min="0" max="12" step="0.05" value="5" aria-label="Town demand in megawatts" disabled>
+    <div class="row nudge"><button class="btn" data-tb="-1">−1</button><button class="btn" data-tb="-0.1">−0.1</button><button class="btn" data-tb="0.1">+0.1</button><button class="btn" data-tb="1">+1</button></div>
+    <p class="blackout" id="tbOut" hidden>BLACKOUT · past 10 MW the equation has no real solution<span id="tbVerdict"></span></p>
+    <svg id="tbCurve" viewBox="0 0 360 220" role="img" aria-label="Nose curve of the two-bus line"></svg>
+    <div class="eq">V² = ( V<sub>s</sub>² ± √(V<sub>s</sub>⁴ − 4X²P²) ) / 2 &nbsp;·&nbsp; P<sub>max</sub> = V<sub>s</sub>² / 2X = 10 MW</div>
+  </section>
+
+
+  <section id="run">
+    <div class="rule"><span>02 · Three buses</span><span>2 / 6</span></div>
+    <div class="chips" role="group" aria-label="Scenario">
+      <button class="chip" data-sc="load" aria-pressed="true">Demand overload</button>
+      <button class="chip" data-sc="gen" aria-pressed="false">Generation overload</button>
+      <button class="chip" data-sc="line" aria-pressed="false">Line outage</button>
+    </div>
+    <div class="param">
+      <div><span class="label">Slider changes</span><b id="pChange"></b></div>
+      <div><span class="label">Kept fixed</span><span id="pFixed"></span></div>
+    </div>
+    <div class="guessbox" id="gBox">
+      <span class="label" id="gQ">Guess first</span>
+      <div class="gopen" id="gOpen">
+        <div class="readout"><span class="big" id="gVal">100</span><span class="unit">MW</span><span class="small muted mono" id="gHomes"></span></div>
+        <input type="range" id="gSlider" min="5" max="1000" step="5" value="100" aria-label="Your guess in megawatts">
+        <div class="row"><button class="btn primary" id="gLock">Lock my guess</button><button class="btn" id="gSkip">Skip</button></div>
+      </div>
+      <p class="glocked mono" id="gLocked" hidden></p>
+    </div>
+    <div class="sim-head"><span class="label">Red frame = what you change</span><span class="status" id="status">Converged</span></div>
+    <svg id="net" viewBox="0 0 360 310" role="img" aria-label="Transit-map style network: power plant, gas plant and a town with a solar and wind farm, joined by three power lines">
+      <g id="buses"></g>
+      <g id="lines"></g>
+      <g id="tags"></g>
+    </svg>
+    <div class="dash">
+      <div class="dash-l">
+        <span class="label" id="pWhat">Farm output</span>
+        <div class="readout"><span class="big" id="pVal">2.0</span><span class="unit">MW</span></div>
+        <span class="small muted mono" id="pTimes">≈ 1,000 homes</span>
+      </div>
+      <svg id="gauge" viewBox="0 0 200 124" role="img" aria-label="Socket voltage dial"></svg>
+    </div>
+    <input type="range" id="pSlider" min="2" max="600" step="0.5" value="2" aria-label="Slider in megawatts" disabled>
+    <div class="row nudge">
+      <button class="btn" data-d="-10">−10</button><button class="btn" data-d="-1">−1</button>
+      <button class="btn" data-d="1">+1</button><button class="btn" data-d="10">+10</button>
+    </div>
+    <div class="row" id="tripRow" hidden><span class="label">Broken line</span><button class="btn trip" data-line="0">1–2</button><button class="btn trip" data-line="1">1–3</button><button class="btn trip" data-line="2">2–3</button></div>
+    <p class="small muted mono" id="lockNote">Lock or skip your guess to start.</p>
+    <div class="homes" id="homesList"></div>
+    <p class="blackout" id="blackout" hidden>BLACKOUT · <span id="boText"></span></p>
+    <svg id="curve" viewBox="0 0 360 240" role="img" aria-label="Nose curve: socket voltage in town against the slider value"></svg>
+    <div class="meters">
+      <div class="meter"><span class="label">Angle <span class="sym">δ₃</span></span><span class="v" id="mD">−0.32 <small>°</small></span></div>
+      <div class="meter"><span class="label">Newton steps</span><span class="v" id="mIt">3</span></div>
+      <div class="meter edge"><span class="label">Margin <span class="sym">det J</span></span><span class="v" id="mJ">100 <small>%</small></span><div class="bar"><i id="mJbar"></i></div></div>
+    </div>
+    <div class="row"><button class="btn red" id="tenrBtn">Show the exact limit</button></div>
+  </section>
+
+  <section id="reveal" hidden>
+    <div class="rule"><span>03 · Result</span><span>3 / 6</span></div>
+    <span class="label" id="rLabel">Maximum farm output</span>
+    <div class="readout"><span class="reveal-num" id="rVal">442.6</span><span class="unit">MW</span></div>
+    <p class="verdict" id="rVerdict"></p>
+    <div class="facts" id="rFacts"></div>
+    <details><summary class="label">TENR iterations</summary>
+    <div class="tbl"><table><thead><tr><th>it</th><th>λ (pu)</th><th>MW</th><th>V₃ (pu)</th><th>‖F‖</th><th>|det J|</th></tr></thead><tbody id="rTable"></tbody></table></div></details>
+  </section>
+
+  <section id="maths">
+    <div class="rule"><span>04 · Mathematics</span><span>4 / 6</span></div>
+    <div class="steps">
+      <div class="mcard"><span class="wk">Week 1</span><h3>Grid = matrix</h3><div class="eq"><em>I</em> = <em>Y</em> <em>V</em></div></div>
+      <div class="mcard"><span class="wk">Week 2</span><h3>Power is nonlinear</h3><div class="eq"><em>S</em> = <em>V</em> <em>I</em>*</div><span class="small muted">two voltages → one → none</span></div>
+      <div class="mcard"><span class="wk">Week 3</span><h3>Newton breaks at the nose</h3><div class="eq">x ← x − <em>J</em>⁻¹F</div><div class="eq">det <em>J</em> = 0 ⇒ limit</div></div>
+    </div>
+    <div class="ymat" id="ymat"></div>
+  </section>
+
+  <section class="life" id="life">
+    <div class="rule"><span>05 · Real life</span><span>5 / 6</span></div>
+    <article><span class="when">2025</span><div><h3>Spain and Portugal go dark</h3><p>28 April, midday, high solar: voltage control lost, whole peninsula out in seconds.</p></div></article>
+    <article><span class="when">Weekly</span><div><h3>Wind farms paid to stop</h3><p>Lines full on windy days in Germany and the UK.</p></div></article>
+    <article><span class="when">Soon</span><div><h3>EVs, heat pumps, rooftop solar</h3><p>Can your street take one more?</p></div></article>
+  </section>
+
+  <section class="debate" id="debate">
+    <div class="rule"><span>06 · Discussion</span><span>6 / 6</span></div>
+    <h2>Why not run at the limit?</h2>
+    <div class="facts inv">
+      <div><span class="fnum">442.6 MW</span><span class="label">collapse</span></div>
+      <div><span class="fnum" id="vBand">51 MW</span><span class="label">socket passes 242 V</span></div>
+      <div><span class="fnum">205.6 MW</span><span class="label">one line down</span></div>
+    </div>
+    <p>Which limit would you respect? Hands up: guessed &lt;100, 100–400, &gt;400 MW?</p>
+  </section>
+
+  <p class="foot">1 pu = 10 MW, 10 kV, 230 V at the socket · Week 3 network: lines 1–2 0.01+j0.03, 1–3 0.03+j0.04, 2–3 0.02+j0.04 pu; bus 2 PV 1.0 pu, +0.2/−0.1; town 0.5+j0.1 · polar Newton–Raphson + TENR, computed in your browser.</p>
+</div>
+<script>
+// Three-bus power flow (Week 3), polar Newton-Raphson and TENR
+// cfg.on: which of the lines 1-2, 1-3, 2-3 are in service; P3 spec = cfg.a + cfg.s * lambda
+const makeGrid = (cfg = {on: [1, 1, 1], s: 1, a: -0.5}) => {
+  const lines = [[0,1,[0.01,0.03]],[0,2,[0.03,0.04]],[1,2,[0.02,0.04]]].filter((_, k) => cfg.on[k]);
+  const G = [[0,0,0],[0,0,0],[0,0,0]], B = [[0,0,0],[0,0,0],[0,0,0]];
+  for (const [i,j,[r,x]] of lines) {
+    const d = r*r + x*x, g = r/d, b = -x/d;           // y = 1/Z
+    G[i][i]+=g; G[j][j]+=g; G[i][j]-=g; G[j][i]-=g;
+    B[i][i]+=b; B[j][j]+=b; B[i][j]-=b; B[j][i]-=b;
+  }
+  const P2spec = 0.2 - 0.1, Q3spec = 0.0 - 0.1;
+  const unpack = x => [[1, 1, x[2]], [0, x[0], x[1]]];
+  const Pc = (i,V,d) => { let s=0; for (let j=0;j<3;j++) s += V[j]*(G[i][j]*Math.cos(d[i]-d[j]) + B[i][j]*Math.sin(d[i]-d[j])); return V[i]*s; };
+  const Qc = (i,V,d) => { let s=0; for (let j=0;j<3;j++) s += V[j]*(G[i][j]*Math.sin(d[i]-d[j]) - B[i][j]*Math.cos(d[i]-d[j])); return V[i]*s; };
+  function F(x, P) { const [V,d] = unpack(x); return [Pc(1,V,d)-P2spec, Pc(2,V,d)-(cfg.a + cfg.s*P), Qc(2,V,d)-Q3spec]; }
+  function J(x) {
+    const [V,d] = unpack(x), P3 = Pc(2,V,d), Q3 = Qc(2,V,d), Q2 = Qc(1,V,d);
+    const s = Math.sin(d[1]-d[2]), c = Math.cos(d[1]-d[2]);
+    return [
+      [-Q2 - B[1][1]*V[1]**2, V[1]*V[2]*(G[1][2]*s - B[1][2]*c), V[1]*(G[1][2]*c + B[1][2]*s)],
+      [V[2]*V[1]*(-G[2][1]*s - B[2][1]*c), -Q3 - B[2][2]*V[2]**2, P3/V[2] + G[2][2]*V[2]],
+      [-V[2]*V[1]*(G[2][1]*c - B[2][1]*s), P3 - G[2][2]*V[2]**2, Q3/V[2] - B[2][2]*V[2]]];
+  }
+  const det3 = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  function solve(A, b) {               // Gaussian elimination with partial pivoting
+    const n = b.length, M = A.map((r,i) => [...r, b[i]]);
+    for (let k=0;k<n;k++) {
+      let p=k; for (let i=k+1;i<n;i++) if (Math.abs(M[i][k])>Math.abs(M[p][k])) p=i;
+      [M[k],M[p]] = [M[p],M[k]];
+      for (let i=k+1;i<n;i++) { const f=M[i][k]/M[k][k]; for (let j=k;j<=n;j++) M[i][j]-=f*M[k][j]; }
+    }
+    const x = new Array(n);
+    for (let i=n-1;i>=0;i--) { let s=M[i][n]; for (let j=i+1;j<n;j++) s-=M[i][j]*x[j]; x[i]=s/M[i][i]; }
+    return x;
+  }
+  const maxAbs = v => Math.max(...v.map(Math.abs));
+  function newton(x0, P, tol=1e-10, maxit=30) {
+    let x = x0.slice();
+    for (let k=0;k<=maxit;k++) {
+      const Fx = F(x,P), err = maxAbs(Fx);
+      if (err < tol) return {x, it:k, ok:true};
+      if (!Fx.every(Number.isFinite) || err > 1e6) return {x, it:k, ok:false};
+      const dx = solve(J(x), Fx); x = x.map((v,i) => v - dx[i]);
+      if (!x.every(Number.isFinite)) return {x, it:k, ok:false};
+    }
+    return {x, it:maxit, ok:false};
+  }
+  function inv3(m) { const d = det3(m); const r = [[0,0,0],[0,0,0],[0,0,0]];
+    for (let i=0;i<3;i++) for (let j=0;j<3;j++) {
+      const a=[0,1,2].filter(k=>k!==j), b=[0,1,2].filter(k=>k!==i);
+      r[i][j] = ((i+j)%2?-1:1)*(m[a[0]][b[0]]*m[a[1]][b[1]]-m[a[0]][b[1]]*m[a[1]][b[0]])/d; }
+    return r; }
+  function gradDet(x, h=1e-6) {        // Jacobi's formula: d(det J)/dx_k = tr(adj(J) dJ/dx_k)
+    const Jx = J(x), adj = inv3(Jx).map(r => r.map(v => v*det3(Jx)));
+    return [0,1,2].map(k => {
+      const xp = x.slice(), xm = x.slice(); xp[k]+=h; xm[k]-=h;
+      const Jp = J(xp), Jm = J(xm); let t = 0;
+      for (let i=0;i<3;i++) for (let j=0;j<3;j++) t += adj[i][j]*(Jp[j][i]-Jm[j][i])/(2*h);
+      return t; });
+  }
+  function tenr(x0, lam0, tol=1e-10, maxit=30) {
+    let z = [...x0, lam0]; const log = [];
+    for (let k=0;k<=maxit;k++) {
+      const x = z.slice(0,3), Fx = F(x,z[3]), Jx = J(x), g = det3(Jx), nF = Math.hypot(...Fx);
+      log.push({k, lam:z[3], V3:x[2], nF, g:Math.abs(g)});
+      if (nF < tol && Math.abs(g) < 1e-6) return {z, it:k, log};
+      const gd = gradDet(x);
+      const Je = [[...Jx[0],0],[...Jx[1],-cfg.s],[...Jx[2],0],[...gd,0]];
+      const dz = solve(Je, [...Fx, g]); z = z.map((v,i) => v - dz[i]);
+    }
+    return {z, it:maxit, log};
+  }
+  // whole nose curve: fix delta3, solve [delta2, V3, P] (passes through the fold)
+  function curveAt(d3, y0) {
+    let y = y0.slice();
+    for (let k=0;k<40;k++) {
+      const x = [y[0], d3, y[1]], Fx = F(x, y[2]), Jx = J(x);
+      if (maxAbs(Fx) < 1e-11) return y;
+      const A = [[Jx[0][0],Jx[0][2],0],[Jx[1][0],Jx[1][2],-cfg.s],[Jx[2][0],Jx[2][2],0]];
+      const dy = solve(A, Fx); y = y.map((v,i)=>v-dy[i]);
+    }
+    return null;
+  }
+  function flows(x) {                  // from-end active power and current magnitude of each line
+    const [V,d] = unpack(x);
+    return lines.map(([i,j,[r,xx]]) => {
+      const dd=r*r+xx*xx, g=r/dd, b=-xx/dd;
+      const Pij = V[i]*V[i]*g - V[i]*V[j]*(g*Math.cos(d[i]-d[j]) + b*Math.sin(d[i]-d[j]));
+      const I = Math.hypot(V[i]*Math.cos(d[i])-V[j]*Math.cos(d[j]), V[i]*Math.sin(d[i])-V[j]*Math.sin(d[j])) / Math.hypot(r,xx);
+      return {i, j, P: Pij, I}; });
+  }
+  return {cfg, F, J, det3, newton, tenr, curveAt, flows, Pc, Qc, unpack, G, B};
+};
+if (typeof module !== 'undefined') module.exports = makeGrid;
+(() => {
+  const $ = id => document.getElementById(id);
+  const deg = r => r * 180 / Math.PI;
+  const fmt = (v, n) => v.toFixed(n).replace('-', '−');
+  const SB = 10, SOCK = 230;   // 1 pu = 10 MW, 1 pu voltage = 10 kV = 230 V at the socket
+  const homes = mw => Math.round(mw * 1000 / 2 / 100) * 100;   // about 2 kW per home in the evening
+  const nf = n => n.toLocaleString('en-US');
+  const LINE_NAMES = ['1–2', '1–3', '2–3'];
+
+  // scenarios: lambda is the farm output (sun) or the town demand (heat), in pu
+  const SC = {
+    sun:  {s: 1, a: -0.5, lam0: 0.2, max: 60, axis: 50, what: 'Farm output', axisLabel: 'Farm output (MW)'},
+    heat: {s: -1, a: 0.2, lam0: 0.5, max: 20, axis: 16, what: 'Town demand', axisLabel: 'Town demand (MW)'},
+  };
+  let scen = 'sun', on = [1, 1, 1];
+  let baseSign = 1, M, base, curve, iNose, detBase, cur, maxSeen, revealed, tenrRes;
+
+  function traceCurve(G, b, s) {   // whole nose curve with delta3 as the parameter
+    const out = []; let y = [b.x[0], b.x[2], b.lam];
+    for (let k = 0; k < 600; k++) {
+      const d = b.x[1] + s * k * 0.004; y = G.curveAt(d, y);
+      if (!y || y[1] < 0.05 || y[2] < 0) break;
+      out.push({P: y[2], V: y[1], x: [y[0], d, y[1]]});
+    }
+    return out;
+  }
+  function rebuild() {
+    const c = SC[scen];
+    M = makeGrid({on, s: c.s, a: c.a});
+    const b = M.newton([0, 0, 1], c.lam0); base = {x: b.x, lam: c.lam0, it: b.it};
+    baseSign = Math.sign(M.det3(M.J(b.x)));
+    curve = traceCurve(M, base, c.s);
+    iNose = 0; curve.forEach((p, i) => { if (p.P > curve[iNose].P) iNose = i; });
+    // det J along the stable branch; its largest value counts as 100 % (farthest from the edge)
+    detBase = Math.max(...curve.slice(0, iNose + 1).map(p => Math.abs(M.det3(M.J(p.x)))));
+    cur = {x: base.x.slice(), P: c.lam0, it: base.it, ok: true};
+    maxSeen = c.lam0; revealed = false; tenrRes = null; $('reveal').hidden = true;
+  }
+
+  // the voltage band for the discussion box, from the intact sunny network
+  { const G = makeGrid({on: [1, 1, 1], s: 1, a: -0.5}), b = G.newton([0, 0, 1], 0.2);
+    const hit = traceCurve(G, {x: b.x, lam: 0.2}, 1).find(p => p.V >= 1.05);
+    if (hit) $('vBand').textContent = Math.round(hit.P * SB) + ' MW'; }
+
+  // ---- Y matrix print (Week 1 card) ----
+  { const G = makeGrid();
+    $('ymat').textContent = 'Y (pu) =\n' + G.G.map((r, i) => r.map((g, j) => {
+      const b = G.B[i][j]; return (g >= 0 ? ' ' : '−') + Math.abs(g).toFixed(2) + (b >= 0 ? '+' : '−') + 'j' + Math.abs(b).toFixed(2);
+    }).join('  ')).join('\n'); }
+
+  // ---- guesses: one per case, locked before the slider unlocks ----
+  const pS = $('pSlider');
+  function guessBox(p, onLock) {
+    const S = $(p + 'Slider');
+    const show = () => { $(p + 'Val').textContent = nf(+S.value); $(p + 'Homes').textContent = '≈ ' + nf(homes(+S.value)) + ' homes'; };
+    S.addEventListener('input', show);
+    $(p + 'Lock').addEventListener('click', () => onLock(+S.value));
+    $(p + 'Skip').addEventListener('click', () => onLock(null));
+    return {
+      reset(q, min, max, step, val) { $(p + 'Q').textContent = q; Object.assign(S, {min, max, step}); S.value = val; show();
+        $(p + 'Open').hidden = false; $(p + 'Locked').hidden = true; },
+      locked(mw) { $(p + 'Open').hidden = true; $(p + 'Locked').hidden = false;
+        $(p + 'Locked').textContent = mw == null ? 'No guess' : '✓ Your guess: ' + nf(mw) + ' MW'; },
+    };
+  }
+  const verdict = (g, limMW) => { const e = (g - limMW) / limMW * 100;
+    return 'Your guess ' + nf(g) + ' MW · ' + (Math.abs(e) < 10 ? 'within ' + Math.ceil(Math.abs(e)) + ' %' : (e < 0 ? Math.round(-e) + ' % too low' : Math.round(e) + ' % too high')); };
+  const guesses = {};           // MW per case key; null = skipped
+  const GQ = {gen: ['Guess first: how many MW can the farm push out?', 5, 1000, 5, 100],
+              load: ['Guess first: how many MW can the town use?', 5, 400, 5, 50],
+              line: ['Guess first: with one line broken, how many MW can the town use?', 5, 400, 5, 50]};
+  const unlock = msg => { pS.disabled = false; $('lockNote').textContent = msg; };
+  const gb = guessBox('g', mw => { guesses[caseKey] = mw; gb.locked(mw); unlock('Drag →'); drawCurve(); });
+  function syncGuess() {
+    if (caseKey in guesses) { gb.locked(guesses[caseKey]); unlock('Drag →'); }
+    else { gb.reset(...GQ[caseKey]); pS.disabled = true; $('lockNote').textContent = 'Lock or skip your guess to start.'; }
+  }
+  let guess = null;   // the current case's guess in pu, for the chart
+
+  // ---- continuation along the slider: warm-started NR, adaptive step ----
+  function goTo(P) {
+    let x = cur.ok ? cur.x : base.x.slice(), p = cur.ok ? cur.P : base.lam, it = 0;
+    if (Math.abs(P - p) < 1e-12) { const r = M.newton(x, P); return {x: r.x, P, it: r.it, ok: r.ok}; }
+    const dir = Math.sign(P - p); let h = 1;
+    while ((P - p) * dir > 1e-12) {
+      const target = dir > 0 ? Math.min(p + h, P) : Math.max(p - h, P);
+      const r = M.newton(x, target);
+      if (r.ok && !(r.x[2] > 0.05 && M.det3(M.J(r.x)) * baseSign > 0)) r.ok = false;   // landed on the unstable branch
+      if (r.ok) { x = r.x; p = target; it = r.it; h = Math.min(1, h * 2); }
+      else { h /= 2; if (h < 1e-5) return {x, P: p, it: r.it, ok: false, at: P}; }
+    }
+    return {x, P, it, ok: true};
+  }
+
+  // what people notice at home, from the socket voltage (EN 50160 allows 207–253 V)
+  const ICON = {
+    lamp: '<path d="M22 4a13 13 0 0 0-7 24c2 2 3 4 3 6h8c0-2 1-4 3-6a13 13 0 0 0-7-24z"/><rect x="17" y="36" width="10" height="4"/>',
+    fridge: '<rect x="11" y="3" width="22" height="38" rx="2"/><rect x="11" y="15" width="22" height="2" fill="var(--paper)"/><rect x="14" y="8" width="2" height="5" fill="var(--paper)"/><rect x="14" y="20" width="2" height="7" fill="var(--paper)"/>',
+    solar: '<path d="M4 30 L12 12 H40 L32 30 Z"/><path d="M14 30 L22 12 M24 30 L31 12 M8 21 H36" stroke="var(--paper)" stroke-width="1.6"/><rect x="20" y="30" width="4" height="10"/>',
+  };
+  function homesState(v) {
+    if (v == null) return [['lamp', 'out', 'Off'], ['fridge', 'out', 'Off'], ['solar', 'out', 'Off']];
+    return [
+      ['lamp', v > 253 || v < 207 ? 'bad' : v > 242 || v < 218 ? 'warn' : 'ok', v > 253 ? 'Too high' : v > 242 ? 'High' : v >= 218 ? 'Normal' : v >= 207 ? 'Dim' : 'Flicker'],
+      ['fridge', v < 207 ? 'bad' : v > 253 || v < 218 ? 'warn' : 'ok', v < 207 ? 'Tripped' : v < 218 ? 'Straining' : v > 253 ? 'Stressed' : 'Normal'],
+      ['solar', v > 253 ? 'bad' : 'ok', v > 253 ? 'Disconnected' : 'On'],
+    ];
+  }
+  function showHomes(v) {
+    const names = {lamp: 'Lights', fridge: 'Fridge · AC', solar: 'Rooftop solar'};
+    $('homesList').innerHTML = homesState(v).map(([ic, k, w]) => {
+      const col = k === 'bad' ? 'var(--red)' : k === 'out' ? 'var(--grey)' : 'var(--ink)';
+      const flick = ic === 'lamp' && k === 'bad' && v != null && v < 207 ? ' class="flick"' : '';
+      return `<div class="${k}"><svg viewBox="0 0 44 44"${flick} style="fill:${col}">${ICON[ic]}</svg><span class="label">${names[ic]}</span><span class="w">${w}</span></div>`;
+    }).join('');
+  }
+
+  // ---- socket-voltage dial, 150–290 V over a half circle ----
+  const GA = {min: 150, max: 290, cx: 100, cy: 104, r: 84};
+  const gAng = v => Math.PI * (1 - (Math.max(GA.min, Math.min(GA.max, v)) - GA.min) / (GA.max - GA.min));
+  const gPt = (v, r) => [GA.cx + r * Math.cos(gAng(v)), GA.cy - r * Math.sin(gAng(v))];
+  function drawGauge(v, id = 'gauge') {
+    const g = $(id); g.innerHTML = '';
+    const arc = (v0, v1, col, w) => { const [x0, y0] = gPt(v0, GA.r), [x1, y1] = gPt(v1, GA.r);
+      el('path', {d: `M${x0} ${y0} A${GA.r} ${GA.r} 0 0 1 ${x1} ${y1}`, fill: 'none', stroke: col, 'stroke-width': w}, g); };
+    arc(150, 207, 'var(--red)', 12); arc(207, 218, 'var(--band)', 12); arc(218, 242, 'var(--ink)', 12); arc(242, 253, 'var(--band)', 12); arc(253, 290, 'var(--red)', 12);
+    [150, 207, 230, 253, 290].forEach(t => { const [x, y] = gPt(t, GA.r - 18);
+      el('text', {x, y: y + 3, fill: 'var(--grey)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 9, 'text-anchor': 'middle'}, g).textContent = t; });
+    if (v != null) { const [x, y] = gPt(v, GA.r - 4);
+      el('line', {x1: GA.cx, y1: GA.cy, x2: x, y2: y, stroke: 'var(--ink)', 'stroke-width': 4, 'stroke-linecap': 'round'}, g); }
+    el('circle', {cx: GA.cx, cy: GA.cy, r: 6, fill: 'var(--red)'}, g);
+    el('text', {x: GA.cx, y: GA.cy - 22, fill: v == null || v > 253 || v < 207 ? 'var(--red)' : 'var(--ink)', 'font-family': 'Inter Tight, sans-serif', 'font-weight': 800, 'font-size': 26, 'text-anchor': 'middle', 'letter-spacing': -1}, g).textContent = v == null ? '0 V' : Math.round(v) + ' V';
+    el('text', {x: GA.cx, y: GA.cy + 16, fill: 'var(--grey)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 9, 'text-anchor': 'middle', 'letter-spacing': 1}, g).textContent = 'SOCKET IN TOWN';
+  }
+
+  function update(P) {
+    const c = SC[scen];
+    P = Math.max(c.lam0, Math.min(c.max, P)); pS.value = P * SB;
+    const r = goTo(P);
+    $('pVal').textContent = (P * SB).toFixed(P * SB < 100 ? 1 : 0);
+    $('pTimes').textContent = '≈ ' + nf(homes(P * SB)) + ' homes';
+    const st = $('status');
+    if (r.ok) {
+      cur = r; maxSeen = Math.max(maxSeen, P);
+      const V3 = r.x[2], dj = Math.abs(M.det3(M.J(r.x))) / detBase;
+      $('mD').innerHTML = fmt(deg(r.x[1]), 2) + ' <small>°</small>';
+      $('mIt').innerHTML = String(r.it);
+      $('mJ').innerHTML = (100 * dj).toFixed(dj < 0.01 ? 2 : 1) + ' <small>%</small>';
+      $('mJbar').style.width = Math.max(0, Math.min(100, 100 * dj)) + '%';
+      $('mJbar').style.background = dj > 0.1 ? 'var(--ink)' : 'var(--red)';
+      if (V3 > 1.05 || V3 < 0.95) { st.className = 'status warn'; st.textContent = V3 > 1.05 ? 'Voltage too high' : 'Voltage too low'; }
+      else { st.className = 'status'; st.textContent = 'Converged'; }
+      $('blackout').hidden = true;
+      setNet(r.x, dj, false); showHomes(V3 * SOCK); drawGauge(V3 * SOCK);
+    } else {
+      cur = {...r, ok: false};
+      st.className = 'status down'; st.textContent = 'No solution';
+      $('mIt').innerHTML = '∞';
+      $('mJ').innerHTML = '0 <small>%</small>'; $('mJbar').style.width = '0%';
+      $('mD').innerHTML = '— <small>°</small>';
+      const tripped = on.map((v, k) => v ? null : 'line ' + LINE_NAMES[k]).filter(Boolean);
+      $('boText').textContent = (P * SB).toFixed(1) + ' MW' + (tripped.length ? ' · ' + tripped.join(', ') + ' down' : '') + ' · no solution · Newton diverges';
+      $('blackout').hidden = false;
+      setNet(null, 0, true); showHomes(null); drawGauge(null);
+      if (!revealed) runTenr(false);
+    }
+    drawCurve();
+  }
+  pS.addEventListener('input', () => update(+pS.value / SB));
+  document.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => { if (!pS.disabled) update((+pS.value + +b.dataset.d) / SB); }));
+
+  // ---- network as a transit map, with solid pictograms ----
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (t, a, parent) => { const e = document.createElementNS(NS, t);   // fill and stroke go through style so CSS tokens work
+    for (const k in a) (k === 'fill' || k === 'stroke') ? e.style.setProperty(k, a[k]) : e.setAttribute(k, a[k]); parent && parent.appendChild(e); return e; };
+  const pos = [[70, 104], [290, 104], [180, 214]];   // 1–3 and 2–3 run at exactly 45°
+  const gL = $('lines'), gB = $('buses'), gT = $('tags');
+  const INK = 'var(--ink)', PAPER = 'var(--paper)', LIT = '#F2EFE8', RED = '#E2231A', DARKWIN = '#5A5A5A', OFF = '#A8A49B';
+  const FD = 'Inter Tight, Helvetica, Arial, sans-serif', FM = 'IBM Plex Mono, monospace';
+  // power plant: two cooling towers and a hall
+  el('path', {d: 'M14 86 Q24 62 18 40 L42 40 Q36 62 46 86 Z M44 86 Q54 62 48 46 L70 46 Q64 62 74 86 Z', fill: INK}, gB);
+  el('rect', {x: 74, y: 64, width: 28, height: 22, fill: INK}, gB);
+  const steam = [[30, 32, 6], [38, 24, 8], [58, 38, 5], [64, 30, 7]].map(([cx, cy, r]) => el('circle', {cx, cy, r, fill: OFF}, gB));
+  // gas plant: saw-tooth hall and two stacks
+  el('path', {d: 'M256 86 V66 L268 58 V66 L280 58 V66 L292 58 V66 L304 58 V86 Z', fill: INK}, gB);
+  el('rect', {x: 310, y: 40, width: 8, height: 46, fill: INK}, gB);
+  el('rect', {x: 324, y: 50, width: 7, height: 36, fill: INK}, gB);
+  // town under bus 3
+  const windows = [];
+  [[136, 248, 20, 40], [158, 234, 24, 54], [184, 252, 16, 36], [202, 240, 24, 48]].forEach(([x, y, w, h]) => {
+    el('rect', {x, y, width: w, height: h, fill: INK}, gB);
+    for (let yy = y + 5; yy < y + h - 6; yy += 9) for (let xx = x + 4; xx < x + w - 4; xx += 7)
+      windows.push(el('rect', {x: xx, y: yy, width: 3.5, height: 4, fill: LIT}, gB));
+  });
+  [[118, 270], [238, 272]].forEach(([x, y]) => { el('path', {d: `M${x - 10} ${y} L${x} ${y - 10} L${x + 10} ${y} V${y + 18} H${x - 10} Z`, fill: INK}, gB);
+    windows.push(el('rect', {x: x - 3, y: y + 3, width: 6, height: 6, fill: LIT}, gB)); });
+  // solar farm, bottom left
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+    const x = 6 + c * 28 + r * 4, y = 252 + r * 12;
+    el('path', {d: `M${x} ${y + 8} L${x + 5} ${y} H${x + 28} L${x + 23} ${y + 8} Z`, fill: INK}, gB);
+  }
+  // wind turbines, bottom right
+  const rotors = [[300, 244, 1], [336, 254, .8]].map(([x, y, s]) => {
+    el('rect', {x: x - 1.6 * s, y, width: 3.2 * s, height: 288 - y, fill: INK}, gB);
+    const g = el('g', {}, gB);
+    for (let a = 0; a < 3; a++) el('path', {d: `M${x} ${y} L${x - 2.6 * s} ${y - 15 * s} L${x} ${y - 24 * s} L${x + 2.6 * s} ${y - 15 * s} Z`, fill: INK, transform: `rotate(${a * 120} ${x} ${y})`}, g);
+    el('circle', {cx: x, cy: y, r: 3 * s, fill: INK}, gB);
+    return {g, x, y};
+  });
+  el('rect', {x: 0, y: 288, width: 360, height: 2, fill: INK}, gB);
+  // farm feeders, routed at 90° into bus 3
+  const feeders = ['M94 250 V214 H180', 'M318 222 V214 H180'].map(d => el('path', {d, fill: 'none', stroke: RED, 'stroke-width': 5, 'stroke-linejoin': 'round'}, gL));
+  // lines
+  const segs = [[0, 1], [0, 2], [1, 2]];
+  const lineBase = segs.map(([i, j]) => el('line', {x1: pos[i][0], y1: pos[i][1], x2: pos[j][0], y2: pos[j][1], stroke: RED, 'stroke-width': 14, 'stroke-linecap': 'round'}, gL));
+  const lineEls = segs.map(([i, j]) => el('line', {x1: pos[i][0], y1: pos[i][1], x2: pos[j][0], y2: pos[j][1], stroke: PAPER, 'stroke-width': 2.5, 'stroke-dasharray': '4 12', 'stroke-linecap': 'round'}, gL));
+  const flowLbl = [[0, 1, 0, -14], [0, 2, -30, 6], [1, 2, 30, 6]].map(([i, j, dx, dy]) => el('text', {x: (pos[i][0] + pos[j][0]) / 2 + dx, y: (pos[i][1] + pos[j][1]) / 2 + dy, fill: INK, 'font-family': FM, 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle'}, gL));
+  // stations and names
+  const names = [['Power plant', 'BUS 1', 'start'], ['Gas plant', 'BUS 2', 'end'], ['Town · bus 3', '', 'start']];
+  pos.forEach(([x, y], k) => {
+    el('circle', {cx: x, cy: y, r: 10, fill: PAPER, stroke: INK, 'stroke-width': 6}, gT);
+    const [tx, ty, an] = [[4, 130, 'start'], [356, 130, 'end'], [180, 304, 'middle']][k];
+    el('text', {x: tx, y: ty, fill: INK, 'font-family': FD, 'font-weight': 800, 'font-size': 14, 'text-anchor': an}, gT).textContent = names[k][0];
+    if (k < 2) el('text', {x: tx, y: ty + 12, fill: 'var(--grey)', 'font-family': FM, 'font-size': 9.5, 'letter-spacing': 1, 'text-anchor': an}, gT).textContent = names[k][1];
+  });
+  el('text', {x: 6, y: 244, fill: INK, 'font-family': FD, 'font-weight': 700, 'font-size': 12}, gT).textContent = 'Solar farm';
+  // dashed red frames mark what the slider changes
+  const HL = {farm: [[2, 230, 100, 60], [262, 192, 96, 98]], town: [[104, 224, 150, 66]]};
+  const hlG = el('g', {}, gT);
+  function highlight(which) {
+    hlG.innerHTML = '';
+    (HL[which] || []).forEach(([x, y, w, h]) => el('rect', {x, y, width: w, height: h, fill: 'none', stroke: RED, 'stroke-width': 2.5, 'stroke-dasharray': '6 4', class: 'hl'}, hlG));
+  }
+  el('text', {x: 354, y: 206, fill: INK, 'font-family': FD, 'font-weight': 700, 'font-size': 12, 'text-anchor': 'end'}, gT).textContent = 'Wind farm';
+
+  let flowState = [0, 0, 0], spin = 0.4, dark = false;
+  const tripMarks = segs.map(([i, j]) => el('text', {x: (pos[i][0] + pos[j][0]) / 2, y: (pos[i][1] + pos[j][1]) / 2 + 9, fill: INK, 'font-family': FD, 'font-weight': 800, 'font-size': 28, 'text-anchor': 'middle'}, gL));
+  let glow = 1;
+  function setOut() { document.documentElement.classList.toggle('out', dark || tbDark); }
+  function setNet(x, dj, isDark) {
+    if (x) { const v = x[2] * SOCK; glow = v >= 218 ? 1 : Math.max(0.15, (v - 130) / 88); }
+    dark = isDark; setOut();
+    windows.forEach(w => { w.style.fill = isDark ? DARKWIN : LIT; w.style.opacity = isDark ? 1 : glow; });
+    steam.forEach(s => s.setAttribute('opacity', isDark ? 0 : 1));
+    feeders.forEach(f => f.style.stroke = isDark ? '#4A4843' : RED);
+    tripMarks.forEach((t, k) => t.textContent = on[k] ? '' : '×');
+    lineBase.forEach((l, k) => { l.style.stroke = isDark ? '#4A4843' : !on[k] ? OFF : RED; l.setAttribute('stroke-width', on[k] ? 14 : 4); l.setAttribute('stroke-dasharray', on[k] ? '' : '6 6'); });
+    if (!x) { lineEls.forEach(l => l.style.stroke = 'transparent'); flowState = [0, 0, 0]; flowLbl.forEach(t => t.textContent = ''); return; }
+    const f = M.flows(x);
+    
+    let n = 0;
+    segs.forEach((_, k) => {
+      if (!on[k]) { lineEls[k].style.stroke = 'transparent'; flowState[k] = 0; flowLbl[k].textContent = ''; return; }
+      const fl = f[n++];
+      lineEls[k].style.stroke = PAPER;
+      flowState[k] = fl.P; flowLbl[k].textContent = Math.round(Math.abs(fl.P) * SB) + ' MW';
+    });
+    spin = scen === 'sun' ? 0.4 + Math.min(12, cur.P * 0.25) : 0.3;
+  }
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let off = [0, 0, 0], ang = 0;
+  function tick() {
+    if (!dark) {
+      flowState.forEach((P, k) => { off[k] -= Math.sign(P) * Math.min(4, 0.3 + Math.abs(P) * 0.25); lineEls[k].setAttribute('stroke-dashoffset', off[k]); });
+      ang = (ang + spin) % 360; rotors.forEach(r => r.g.setAttribute('transform', `rotate(${ang} ${r.x} ${r.y})`));
+    }
+    requestAnimationFrame(tick);
+  }
+  if (!reduce) requestAnimationFrame(tick);
+
+  // ---- nose curve chart ----
+  const C = $('curve'), W = 360, H = 240, m = {l: 40, r: 12, t: 12, b: 34};
+  const VMAX = 1.25;
+  function drawCurve() {
+    const PX = SC[scen].axis, sx = P => m.l + P / PX * (W - m.l - m.r), sy = V => H - m.b - V / VMAX * (H - m.t - m.b);
+    C.innerHTML = '';
+    el('rect', {x: m.l, y: sy(1.05), width: W - m.l - m.r, height: sy(0.95) - sy(1.05), fill: 'var(--band)'}, C);
+    for (let volts = 0; volts <= 250; volts += 50) { const V = volts / SOCK;
+      el('line', {x1: m.l, x2: W - m.r, y1: sy(V), y2: sy(V), stroke: 'var(--band)', 'stroke-width': 1}, C);
+      el('text', {x: m.l - 6, y: sy(V) + 4, fill: 'var(--grey)', 'font-size': 10, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': 'end'}, C).textContent = volts;
+    }
+    const tick = PX > 20 ? 10 : 4;
+    for (let P = 0; P <= PX + 1e-9; P += tick)
+      el('text', {x: sx(P), y: H - m.b + 16, fill: 'var(--grey)', 'font-size': 10, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': 'middle'}, C).textContent = Math.round(P * SB);
+    el('text', {x: (m.l + W - m.r) / 2, y: H - 4, fill: 'var(--grey)', 'font-size': 11, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': 'middle'}, C).textContent = SC[scen].axisLabel;
+    el('text', {x: m.l + 6, y: m.t + 10, fill: 'var(--grey)', 'font-size': 11, 'font-family': 'IBM Plex Mono, monospace'}, C).textContent = 'Socket voltage in town (V)';
+    const clip = p => p.P <= PX;
+    const upper = curve.slice(0, iNose + 1).filter(c => (revealed || c.P <= maxSeen) && clip(c));
+    if (upper.length > 1) el('polyline', {points: upper.map(c => sx(c.P) + ',' + sy(c.V)).join(' '), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 4, 'stroke-linejoin': 'round'}, C);
+    if (revealed && tenrRes) {
+      el('polyline', {points: curve.slice(iNose).filter(clip).map(c => sx(c.P) + ',' + sy(c.V)).join(' '), fill: 'none', stroke: 'var(--grey)', 'stroke-width': 2, 'stroke-dasharray': '5 5'}, C);
+      el('line', {x1: sx(tenrRes.z[3]), x2: sx(tenrRes.z[3]), y1: m.t + 16, y2: H - m.b, stroke: '#E2231A', 'stroke-width': 2, 'stroke-dasharray': '4 4'}, C);
+      el('circle', {cx: sx(tenrRes.z[3]), cy: sy(tenrRes.z[2]), r: 7, fill: '#E2231A'}, C);
+      const right = tenrRes.z[3] / PX > 0.6;
+      el('text', {x: sx(tenrRes.z[3]) + (right ? -10 : 10), y: sy(tenrRes.z[2]) + 22, fill: '#E2231A', 'font-weight': 700, 'font-size': 11, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': right ? 'end' : 'start'}, C).textContent = 'limit ' + (tenrRes.z[3] * SB).toFixed(1) + ' MW';
+    }
+    guess = guesses[caseKey] != null ? guesses[caseKey] / SB : null;
+    if (guess != null) {
+      const gx = sx(Math.min(guess, PX));
+      el('line', {x1: gx, x2: gx, y1: m.t + 16, y2: H - m.b, stroke: 'var(--ink)', 'stroke-width': 1.5, 'stroke-dasharray': '2 4'}, C);
+      el('text', {x: gx + (guess > 0.8 * PX ? -4 : 4), y: H - m.b - 6, fill: 'var(--ink)', 'font-size': 10, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': guess > 0.8 * PX ? 'end' : 'start'}, C).textContent = guess > PX ? 'your guess ' + nf(Math.round(guess * SB)) + ' MW →' : 'your guess';
+    }
+    if (cur.ok) el('circle', {cx: sx(Math.min(cur.P, PX)), cy: sy(cur.x[2]), r: 7, fill: 'var(--paper)', stroke: 'var(--ink)', 'stroke-width': 4}, C);
+    else el('text', {x: sx(Math.min(cur.at ?? cur.P, PX)), y: sy(0.6), fill: '#E2231A', 'font-size': 26, 'font-family': 'Inter Tight, sans-serif', 'font-weight': 800, 'text-anchor': 'end'}, C).textContent = '×';
+  }
+
+  // ---- TENR reveal ----
+  function runTenr(scroll) {
+    const c = SC[scen];
+    let P = c.lam0, x = base.x.slice();
+    for (;;) { const r = M.newton(x, P + 1); if (!r.ok) break; P += 1; x = r.x; }
+    tenrRes = M.tenr(x, P); revealed = true;
+    const lim = tenrRes.z[3], mw = lim * SB, intact = on.every(Boolean);
+    const tripped = on.map((v, k) => v ? null : 'line ' + LINE_NAMES[k]).filter(Boolean).join(' and ');
+    $('rLabel').textContent = (scen === 'sun' ? 'Maximum farm output' : 'Maximum town demand') + (intact ? '' : ' · ' + tripped + ' down');
+    $('rVal').textContent = mw.toFixed(1);
+    $('rFacts').innerHTML = [[nf(homes(mw)), 'homes'], [(tenrRes.z[2] * SOCK).toFixed(0) + ' V', 'socket at the limit'], [tenrRes.it, 'TENR steps']]
+      .map(([n, l]) => `<div><span class="fnum">${n}</span><span class="label">${l}</span></div>`).join('');
+    if (guesses[caseKey] != null) {
+      $('rVerdict').textContent = verdict(guesses[caseKey], mw);
+    } else $('rVerdict').textContent = '';
+    $('rTable').innerHTML = tenrRes.log.map(r => `<tr><td>${r.k}</td><td>${r.lam.toFixed(6)}</td><td>${(r.lam * SB).toFixed(2)}</td><td>${r.V3.toFixed(6)}</td><td>${r.nF.toExponential(1)}</td><td>${r.g.toExponential(1)}</td></tr>`).join('');
+    $('reveal').hidden = false; drawCurve();
+    if (scroll) $('reveal').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+  $('tenrBtn').addEventListener('click', () => runTenr(true));
+
+  // ---- scenario chips and line switches ----
+  const CASES = {
+    gen:  {scen: 'sun',  on: [1, 1, 1], hl: 'farm', change: 'Farm output at the town, 2 → 600 MW', fixed: 'Town demand 5 MW · all three lines in service'},
+    load: {scen: 'heat', on: [1, 1, 1], hl: 'town', change: 'Town demand, 5 → 200 MW', fixed: 'Farm output 2 MW · all three lines in service'},
+    line: {scen: 'heat', on: [1, 0, 1], hl: 'town', change: 'Town demand, 5 → 200 MW, with one line broken', fixed: 'Farm output 2 MW · line 1–3 out (pick another line below)'},
+  };
+  let caseKey = 'load';
+  function setScenario(key) {
+    const cs = CASES[key]; caseKey = key;
+    document.querySelectorAll('[data-sc]').forEach(b => b.setAttribute('aria-pressed', b.dataset.sc === key));
+    $('pChange').textContent = cs.change; $('pFixed').textContent = cs.fixed;
+    $('tripRow').hidden = key !== 'line';
+    scen = cs.scen; on = cs.on.slice(); syncTrips();
+    $('pWhat').textContent = SC[scen].what;
+    pS.min = SC[scen].lam0 * SB; pS.max = SC[scen].max * SB;
+    highlight(cs.hl);
+    rebuild(); syncGuess();
+    update(SC[scen].lam0);
+  }
+  function syncTrips() {
+    document.querySelectorAll('[data-line]').forEach(b => { const k = +b.dataset.line;
+      b.setAttribute('aria-pressed', !on[k]); b.textContent = (on[k] ? '' : '× ') + LINE_NAMES[k]; b.setAttribute('aria-label', 'Line ' + LINE_NAMES[k] + (on[k] ? '' : ' broken')); });
+  }
+  document.querySelectorAll('[data-sc]').forEach(b => b.addEventListener('click', () => setScenario(b.dataset.sc)));
+  document.querySelectorAll('[data-line]').forEach(b => b.addEventListener('click', () => {
+    const k = +b.dataset.line, P = cur.ok ? cur.P : (cur.at ?? cur.P);
+    if (!on[k]) return;
+    on = [1, 1, 1]; on[k] = 0; syncTrips(); rebuild(); update(P);   // exactly one line is broken
+  }));
+
+  // ---- two-bus case (Week 2): Vs = 10 kV, line X = 5 Ω = 0.5 pu, R = 0, town load P + j0 ----
+  // V² = (Vs² ± √(Vs⁴ − 4X²P²)) / 2 in pu; the nose is at P_max = Vs²/(2X) = 1 pu = 10 MW
+  const TB = {X: 0.5, Vs: 1};
+  const tbV = (P, upper = true) => { const D = TB.Vs ** 4 - 4 * TB.X ** 2 * P * P; if (D < 0) return null;
+    return Math.sqrt((TB.Vs ** 2 + (upper ? 1 : -1) * Math.sqrt(D)) / 2); };
+  const tbPmax = TB.Vs ** 2 / (2 * TB.X);
+  { // scene: plant — one line — town
+    const s = $('tbNet');
+    el('path', {d: 'M8 96 Q20 70 14 44 L40 44 Q34 70 46 96 Z M42 96 Q54 70 48 52 L72 52 Q66 70 78 96 Z', fill: INK}, s);
+    el('rect', {x: 78, y: 72, width: 26, height: 24, fill: INK}, s);
+    el('rect', {x: 0, y: 128, width: 360, height: 2, fill: INK}, s);
+    el('line', {x1: 96, y1: 112, x2: 254, y2: 112, stroke: RED, 'stroke-width': 14, 'stroke-linecap': 'round'}, s);
+    TB.flow = el('line', {x1: 96, y1: 112, x2: 254, y2: 112, stroke: PAPER, 'stroke-width': 2.5, 'stroke-dasharray': '4 12'}, s);
+    TB.line = s.lastChild.previousSibling;
+    TB.win = [];
+    [[262, 70, 20, 58], [284, 56, 24, 72], [310, 78, 18, 50], [330, 66, 24, 62]].forEach(([x, y, w, h]) => {
+      el('rect', {x, y, width: w, height: h, fill: INK}, s);
+      for (let yy = y + 5; yy < y + h - 6; yy += 9) for (let xx = x + 4; xx < x + w - 4; xx += 7)
+        TB.win.push(el('rect', {x: xx, y: yy, width: 3.5, height: 4, fill: LIT}, s));
+    });
+    [[96, 112], [254, 112]].forEach(([x, y]) => el('circle', {cx: x, cy: y, r: 10, fill: PAPER, stroke: INK, 'stroke-width': 6}, s));
+    el('text', {x: 4, y: 150, fill: INK, 'font-family': FD, 'font-weight': 800, 'font-size': 14}, s).textContent = 'Power station';
+    el('text', {x: 4, y: 162, fill: 'var(--grey)', 'font-family': FM, 'font-size': 9.5, 'letter-spacing': 1}, s).textContent = '10 kV';
+    el('text', {x: 356, y: 150, fill: INK, 'font-family': FD, 'font-weight': 800, 'font-size': 14, 'text-anchor': 'end'}, s).textContent = 'Town';
+    el('text', {x: 356, y: 162, fill: 'var(--grey)', 'font-family': FM, 'font-size': 9.5, 'letter-spacing': 1, 'text-anchor': 'end'}, s).textContent = 'YOU SET THE DEMAND';
+    el('text', {x: 175, y: 96, fill: INK, 'font-family': FM, 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle'}, s).textContent = 'one line · X = 5 Ω';
+  }
+  let tbP = 0.5, tbMax = 0.5, tbDark = false, tbOff = 0, tbGuess;
+  const tgb = guessBox('tg', mw => { tbGuess = mw; tgb.locked(mw); $('tbSlider').disabled = false; tbChart(); });
+  tgb.reset('Guess first: how many MW can one line bring to the town?', 1, 30, 0.5, 5);
+  function tbChart() {
+    const C2 = $('tbCurve'); C2.innerHTML = '';
+    const W = 360, H = 220, m = {l: 40, r: 12, t: 12, b: 34}, PX = 1.2;
+    const sx = P => m.l + P / PX * (W - m.l - m.r), sy = V => H - m.b - V / 1.15 * (H - m.t - m.b);
+    el('rect', {x: m.l, y: sy(1.05), width: W - m.l - m.r, height: sy(0.95) - sy(1.05), fill: 'var(--band)'}, C2);
+    for (let volts = 0; volts <= 250; volts += 50) {
+      el('line', {x1: m.l, x2: W - m.r, y1: sy(volts / SOCK), y2: sy(volts / SOCK), stroke: 'var(--band)', 'stroke-width': 1}, C2);
+      el('text', {x: m.l - 6, y: sy(volts / SOCK) + 4, fill: 'var(--grey)', 'font-size': 10, 'font-family': FM, 'text-anchor': 'end'}, C2).textContent = volts; }
+    for (let P = 0; P <= PX + 1e-9; P += 0.2)
+      el('text', {x: sx(P), y: H - m.b + 16, fill: 'var(--grey)', 'font-size': 10, 'font-family': FM, 'text-anchor': 'middle'}, C2).textContent = Math.round(P * SB);
+    el('text', {x: (m.l + W - m.r) / 2, y: H - 4, fill: 'var(--grey)', 'font-size': 11, 'font-family': FM, 'text-anchor': 'middle'}, C2).textContent = 'Town demand (MW)';
+    const up = [], lo = [];
+    for (let P = 0; P <= tbPmax + 1e-9; P += 0.01) { const p = Math.min(P, tbPmax); up.push([p, tbV(p, true)]); lo.push([p, tbV(p, false)]); }
+    const shown = up.filter(([p]) => p <= tbMax);
+    if (shown.length > 1) el('polyline', {points: shown.map(([p, v]) => sx(p) + ',' + sy(v)).join(' '), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 4}, C2);
+    if (tbMax >= tbPmax) {
+      el('polyline', {points: lo.map(([p, v]) => sx(p) + ',' + sy(v)).join(' '), fill: 'none', stroke: 'var(--grey)', 'stroke-width': 2, 'stroke-dasharray': '5 5'}, C2);
+      el('line', {x1: sx(tbPmax), x2: sx(tbPmax), y1: m.t, y2: H - m.b, stroke: RED, 'stroke-width': 2, 'stroke-dasharray': '4 4'}, C2);
+      el('circle', {cx: sx(tbPmax), cy: sy(tbV(tbPmax)), r: 7, fill: RED}, C2);
+      el('text', {x: sx(tbPmax) - 10, y: sy(tbV(tbPmax)) + 4, fill: RED, 'font-weight': 700, 'font-size': 11, 'font-family': FM, 'text-anchor': 'end'}, C2).textContent = 'nose · 10 MW · 163 V';
+    }
+    if (tbGuess != null) { const gx = sx(Math.min(tbGuess / SB, PX));
+      el('line', {x1: gx, x2: gx, y1: m.t, y2: H - m.b, stroke: 'var(--ink)', 'stroke-width': 1.5, 'stroke-dasharray': '2 4'}, C2);
+      el('text', {x: gx + (tbGuess / SB > 0.8 * PX ? -4 : 4), y: H - m.b - 6, fill: 'var(--ink)', 'font-size': 10, 'font-family': FM, 'text-anchor': tbGuess / SB > 0.8 * PX ? 'end' : 'start'}, C2).textContent = tbGuess / SB > PX ? 'your guess ' + nf(tbGuess) + ' MW →' : 'your guess'; }
+    const v = tbV(tbP);
+    if (v != null) el('circle', {cx: sx(tbP), cy: sy(v), r: 7, fill: 'var(--paper)', stroke: 'var(--ink)', 'stroke-width': 4}, C2);
+  }
+  function tbUpdate(P) {
+    tbP = Math.max(0, Math.min(1.2, P)); $('tbSlider').value = tbP * SB; tbMax = Math.max(tbMax, tbP);
+    const v = tbV(tbP), volts = v == null ? null : v * SOCK;
+    $('tbVal').textContent = (tbP * SB).toFixed(1); $('tbHomes').textContent = '≈ ' + nf(homes(tbP * SB)) + ' homes';
+    drawGauge(volts, 'tbGauge');
+    tbDark = v == null; setOut();
+    const glow = volts == null ? 1 : volts >= 218 ? 1 : Math.max(0.15, (volts - 120) / 98);
+    TB.win.forEach(w => { w.style.fill = tbDark ? DARKWIN : LIT; w.style.opacity = tbDark ? 1 : glow; });
+    TB.line.style.stroke = tbDark ? '#4A4843' : RED; TB.flow.style.stroke = tbDark ? 'transparent' : PAPER;
+    const st = $('tbStatus');
+    if (tbDark) { st.className = 'status down'; st.textContent = 'No solution'; }
+    else if (volts < 207) { st.className = 'status warn'; st.textContent = 'Voltage too low'; }
+    else { st.className = 'status'; st.textContent = 'OK'; }
+    $('tbOut').hidden = !tbDark;
+    $('tbVerdict').textContent = tbDark && tbGuess != null ? ' · ' + verdict(tbGuess, tbPmax * SB) : '';
+    tbChart();
+  }
+  $('tbSlider').addEventListener('input', e => tbUpdate(+e.target.value / SB));
+  document.querySelectorAll('[data-tb]').forEach(b => b.addEventListener('click', () => { if (!$('tbSlider').disabled) tbUpdate(tbP + +b.dataset.tb / SB); }));
+  (function tbTick() { if (!tbDark && !reduce) { tbOff -= 0.4 + tbP * 3; TB.flow.setAttribute('stroke-dashoffset', tbOff); } requestAnimationFrame(tbTick); })();
+  tbUpdate(0.5);
+
+  setScenario('load');
+})();
+</script>
