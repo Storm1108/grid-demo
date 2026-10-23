@@ -137,7 +137,7 @@ th:first-child,td:first-child{text-align:left}
 .facts.inv .label{color:var(--warm)}
 .dash{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:8px;align-items:end}
 .dash-l{display:flex;flex-direction:column;gap:2px;min-width:0}
-#gauge{width:100%;height:auto;display:block}
+#gauge,#tbGauge{width:100%;max-width:240px;height:auto;display:block;justify-self:end}
 .homes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
 .homes>div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-left:2px solid var(--ink)}
 .homes>div:first-child{border-left:0}
@@ -225,7 +225,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
     <div class="row nudge"><button class="btn" data-tb="-1">−1</button><button class="btn" data-tb="-0.1">−0.1</button><button class="btn" data-tb="0.1">+0.1</button><button class="btn" data-tb="1">+1</button></div>
     <p class="blackout" id="tbOut" hidden>BLACKOUT · past <span id="tbOutMW"></span> MW the equation has no real solution<span id="tbVerdict"></span></p>
     <svg id="tbCurve" viewBox="0 0 360 220" role="img" aria-label="Nose curve of the two-bus line"></svg>
-    <div class="eq">V² = ( V<sub>s</sub>² − 2RP ± √((V<sub>s</sub>² − 2RP)² − 4|Z|²P²) ) / 2 &nbsp;·&nbsp; P<sub>max</sub> = V<sub>s</sub>² / 2(R + |Z|) = 7.0 MW</div>
+    <div class="eq" style="white-space:normal">V² = ( V<sub>s</sub>² − 2RP ± √((V<sub>s</sub>² − 2RP)² − 4|Z|²P²) ) / 2<br>P<sub>max</sub> = V<sub>s</sub>² / 2(R + |Z|) = 7.0 MW</div>
   </section>
 
 
@@ -549,7 +549,7 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
   }
 
   // ---- socket-voltage dial, 120–270 V over a half circle ----
-  const GA = {min: 120, max: 270, cx: 100, cy: 104, r: 84};
+  const GA = {min: 120, max: 270, cx: 100, cy: 104, r: 70};
   const gAng = v => Math.PI * (1 - (Math.max(GA.min, Math.min(GA.max, v)) - GA.min) / (GA.max - GA.min));
   const gPt = (v, r) => [GA.cx + r * Math.cos(gAng(v)), GA.cy - r * Math.sin(gAng(v))];
   function drawGauge(v, id = 'gauge') {
@@ -557,12 +557,13 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     const arc = (v0, v1, col, w) => { const [x0, y0] = gPt(v0, GA.r), [x1, y1] = gPt(v1, GA.r);
       el('path', {d: `M${x0} ${y0} A${GA.r} ${GA.r} 0 0 1 ${x1} ${y1}`, fill: 'none', stroke: col, 'stroke-width': w}, g); };
     arc(120, 198, 'var(--red)', 12); arc(198, 209, 'var(--band)', 12); arc(209, 231, 'var(--ink)', 12); arc(231, 242, 'var(--band)', 12); arc(242, 270, 'var(--red)', 12);
-    [120, 198, 220, 242, 270].forEach(t => { const [x, y] = gPt(t, GA.r - 18);
+    // tick labels outside the arc, a short pointer across it: nothing crosses the readout
+    [120, 198, 220, 242, 270].forEach(t => { const [x, y] = gPt(t, GA.r + 15);
       el('text', {x, y: y + 3, fill: 'var(--grey)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 9, 'text-anchor': 'middle'}, g).textContent = t; });
-    if (v != null) { const [x, y] = gPt(v, GA.r - 4);
-      el('line', {x1: GA.cx, y1: GA.cy, x2: x, y2: y, stroke: 'var(--ink)', 'stroke-width': 4, 'stroke-linecap': 'round'}, g); }
-    el('circle', {cx: GA.cx, cy: GA.cy, r: 6, fill: 'var(--red)'}, g);
-    el('text', {x: GA.cx, y: GA.cy - 22, fill: v == null || v > 242 || v < 198 ? 'var(--red)' : 'var(--ink)', 'font-family': 'Inter Tight, sans-serif', 'font-weight': 800, 'font-size': 26, 'text-anchor': 'middle', 'letter-spacing': -1}, g).textContent = v == null ? '0 V' : Math.round(v) + ' V';
+    if (v != null) { const [x0, y0] = gPt(v, GA.r - 20), [x1, y1] = gPt(v, GA.r + 7);
+      el('line', {x1: x0, y1: y0, x2: x1, y2: y1, stroke: 'var(--paper)', 'stroke-width': 9, 'stroke-linecap': 'round'}, g);
+      el('line', {x1: x0, y1: y0, x2: x1, y2: y1, stroke: 'var(--red)', 'stroke-width': 4, 'stroke-linecap': 'round'}, g); }
+    el('text', {x: GA.cx, y: GA.cy - 8, fill: v == null || v > 242 || v < 198 ? 'var(--red)' : 'var(--ink)', 'font-family': 'Inter Tight, sans-serif', 'font-weight': 800, 'font-size': 26, 'text-anchor': 'middle', 'letter-spacing': -1}, g).textContent = v == null ? '0 V' : Math.round(v) + ' V';
     el('text', {x: GA.cx, y: GA.cy + 16, fill: 'var(--grey)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 9, 'text-anchor': 'middle', 'letter-spacing': 1}, g).textContent = 'SOCKET IN TOWN';
   }
 
