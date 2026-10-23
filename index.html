@@ -171,6 +171,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
 .chip{font-size:14px;line-height:1.15}
 .guessbox{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
 .guessbox .label{color:var(--red);font-weight:700}
+.guessbox .hint{margin:0;font-family:var(--f-mono);font-size:13px;line-height:1.45;color:var(--grey)}
 .guessbox .big{font-size:clamp(48px,14vw,72px)}
 .gopen{display:flex;flex-direction:column;gap:6px}
 .glocked{font-size:15px;font-weight:700;margin:0}
@@ -203,6 +204,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
     <div class="sim-head"><h2>Raise the town&rsquo;s demand</h2><span class="status" id="tbStatus">OK</span></div>
     <div class="guessbox" id="tgBox">
       <span class="label" id="tgQ">Guess first: how many MW can one line bring to the town?</span>
+      <p class="hint" id="tgHint">One 10 kV overhead line, 10 km of AC-120 wire (2.45 + j4.0 Ω). The substation holds 10 kV at its end. A home uses about 2 kW.</p>
       <div class="gopen" id="tgOpen">
         <div class="readout"><span class="big" id="tgVal">5</span><span class="unit">MW</span><span class="small muted mono" id="tgHomes"></span></div>
         <input type="range" id="tgSlider" min="1" max="30" step="0.5" value="5" aria-label="Your guess in megawatts">
@@ -240,6 +242,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
     </div>
     <div class="guessbox" id="gBox">
       <span class="label" id="gQ">Guess first</span>
+      <p class="hint" id="gHint"></p>
       <div class="gopen" id="gOpen">
         <div class="readout"><span class="big" id="gVal">100</span><span class="unit">MW</span><span class="small muted mono" id="gHomes"></span></div>
         <input type="range" id="gSlider" min="5" max="1000" step="5" value="100" aria-label="Your guess in megawatts">
@@ -482,7 +485,7 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     $(p + 'Lock').addEventListener('click', () => onLock(+S.value));
     $(p + 'Skip').addEventListener('click', () => onLock(null));
     return {
-      reset(q, min, max, step, val) { $(p + 'Q').textContent = q; Object.assign(S, {min, max, step}); S.value = val; show();
+      reset(q, min, max, step, val, hint) { $(p + 'Q').textContent = q; if (hint) $(p + 'Hint').textContent = hint; Object.assign(S, {min, max, step}); S.value = val; show();
         $(p + 'Open').hidden = false; $(p + 'Locked').hidden = true; },
       locked(mw) { $(p + 'Open').hidden = true; $(p + 'Locked').hidden = false;
         $(p + 'Locked').textContent = mw == null ? 'No guess' : '✓ Your guess: ' + nf(mw) + ' MW'; },
@@ -491,9 +494,12 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
   const verdict = (g, limMW) => { const e = (g - limMW) / limMW * 100;
     return 'Your guess ' + nf(g) + ' MW · ' + (Math.abs(e) < 10 ? 'within ' + Math.ceil(Math.abs(e)) + ' %' : (e < 0 ? Math.round(-e) + ' % too low' : Math.round(e) + ' % too high')); };
   const guesses = {};           // MW per case key; null = skipped
-  const GQ = {gen: ['Guess first: how many MW can the farm push out?', 5, 300, 1, 50],
-              load: ['Guess first: how many MW can the town use?', 1, 100, 1, 20],
-              line: ['Guess first: with one line broken, how many MW can the town use?', 1, 100, 1, 15]};
+  const GQ = {gen: ['Guess first: how many MW can the farm push out?', 5, 300, 1, 50,
+                'The farm sits at the town, which uses 5 MW. The rest leaves over 10 kV lines of AC-120 wire, 0.25 + j0.40 Ω per km: plant–gas plant 4 km, plant–town 6 km, gas plant–town 5 km.'],
+              load: ['Guess first: how many MW can the town use?', 1, 100, 1, 20,
+                'All three lines work. 10 kV lines of AC-120 wire, 0.25 + j0.40 Ω per km: plant–gas plant 4 km, plant–town 6 km, gas plant–town 5 km. The farm gives 2 MW.'],
+              line: ['Guess first: with one line broken, how many MW can the town use?', 1, 100, 1, 15,
+                'One line is down (plant–town, 6 km, unless you pick another below). 10 kV AC-120 wire, 0.25 + j0.40 Ω per km; the others are 4 km and 5 km. The farm gives 2 MW.']};
   const unlock = msg => { pS.disabled = false; $('lockNote').textContent = msg; };
   const gb = guessBox('g', mw => { guesses[caseKey] = mw; gb.locked(mw); unlock('Drag →');
     if (tbDark) tbUpdate(TB_START);   // a new case starts on a lit page
@@ -809,7 +815,7 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     el('text', {x: 4, y: 162, fill: 'var(--grey)', 'font-family': FM, 'font-size': 9.5, 'letter-spacing': 1}, s).textContent = '10 kV';
     el('text', {x: 356, y: 150, fill: INK, 'font-family': FD, 'font-weight': 800, 'font-size': 14, 'text-anchor': 'end'}, s).textContent = 'Town';
     el('text', {x: 356, y: 162, fill: 'var(--grey)', 'font-family': FM, 'font-size': 9.5, 'letter-spacing': 1, 'text-anchor': 'end'}, s).textContent = 'YOU SET THE DEMAND';
-    el('text', {x: 175, y: 96, fill: INK, 'font-family': FM, 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle'}, s).textContent = 'one line · 10 km · 2.45 + j4.0 Ω';
+    el('text', {x: 190, y: 100, fill: INK, 'font-family': FM, 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle'}, s).textContent = '10 kV line · 10 km';
   }
   const PXTB = 0.9, TB_START = 0.1;
   let tbP = TB_START, tbMax = TB_START, tbDark = false, tbOff = 0, tbGuess;
