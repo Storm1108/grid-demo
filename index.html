@@ -1,3 +1,5 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Breaking Point Grid</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -175,6 +177,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
 .foot{font-family:var(--f-mono);font-size:12px;color:var(--grey);border-top:2px solid var(--ink);padding-top:12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+</head><body>
 <div class="hero2">
   <div class="hero2-in">
     <div class="h2top"><span>Mathematics for Engineers · M1</span><span>Live power-flow model</span></div>
@@ -187,7 +190,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
     <h1>Why do the lights go out?</h1>
     <p class="hero-sub">Slide the demand. Watch the voltage. Find the point where the maths says no.</p>
     <div class="facts inv">
-      <div><span class="fnum">230 V</span><span class="label">your socket</span></div>
+      <div><span class="fnum">220 V</span><span class="label">your socket</span></div>
       <div><span class="fnum">2 kW</span><span class="label">one home ≈ one kettle</span></div>
       <div><span class="fnum">1 MW</span><span class="label">≈ 500 homes</span></div>
     </div>
@@ -211,16 +214,16 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
     <div class="dash">
       <div class="dash-l">
         <span class="label">Town demand</span>
-        <div class="readout"><span class="big" id="tbVal">5.0</span><span class="unit">MW</span></div>
-        <span class="small muted mono" id="tbHomes">≈ 2,500 homes</span>
+        <div class="readout"><span class="big" id="tbVal">1.0</span><span class="unit">MW</span></div>
+        <span class="small muted mono" id="tbHomes">≈ 500 homes</span>
       </div>
       <svg id="tbGauge" viewBox="0 0 200 124" role="img" aria-label="Socket voltage dial"></svg>
     </div>
-    <input type="range" id="tbSlider" min="0" max="12" step="0.05" value="5" aria-label="Town demand in megawatts" disabled>
+    <input type="range" id="tbSlider" min="0" max="9" step="0.05" value="1" aria-label="Town demand in megawatts" disabled>
     <div class="row nudge"><button class="btn" data-tb="-1">−1</button><button class="btn" data-tb="-0.1">−0.1</button><button class="btn" data-tb="0.1">+0.1</button><button class="btn" data-tb="1">+1</button></div>
-    <p class="blackout" id="tbOut" hidden>BLACKOUT · past 10 MW the equation has no real solution<span id="tbVerdict"></span></p>
+    <p class="blackout" id="tbOut" hidden>BLACKOUT · past <span id="tbOutMW"></span> MW the equation has no real solution<span id="tbVerdict"></span></p>
     <svg id="tbCurve" viewBox="0 0 360 220" role="img" aria-label="Nose curve of the two-bus line"></svg>
-    <div class="eq">V² = ( V<sub>s</sub>² ± √(V<sub>s</sub>⁴ − 4X²P²) ) / 2 &nbsp;·&nbsp; P<sub>max</sub> = V<sub>s</sub>² / 2X = 10 MW</div>
+    <div class="eq">V² = ( V<sub>s</sub>² − 2RP ± √((V<sub>s</sub>² − 2RP)² − 4|Z|²P²) ) / 2 &nbsp;·&nbsp; P<sub>max</sub> = V<sub>s</sub>² / 2(R + |Z|) = 7.0 MW</div>
   </section>
 
 
@@ -258,7 +261,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
       </div>
       <svg id="gauge" viewBox="0 0 200 124" role="img" aria-label="Socket voltage dial"></svg>
     </div>
-    <input type="range" id="pSlider" min="2" max="600" step="0.5" value="2" aria-label="Slider in megawatts" disabled>
+    <input type="range" id="pSlider" min="2" max="120" step="0.5" value="2" aria-label="Slider in megawatts" disabled>
     <div class="row nudge">
       <button class="btn" data-d="-10">−10</button><button class="btn" data-d="-1">−1</button>
       <button class="btn" data-d="1">+1</button><button class="btn" data-d="10">+10</button>
@@ -279,7 +282,7 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
   <section id="reveal" hidden>
     <div class="rule"><span>03 · Result</span><span>3 / 6</span></div>
     <span class="label" id="rLabel">Maximum farm output</span>
-    <div class="readout"><span class="reveal-num" id="rVal">442.6</span><span class="unit">MW</span></div>
+    <div class="readout"><span class="reveal-num" id="rVal">26.1</span><span class="unit">MW</span></div>
     <p class="verdict" id="rVerdict"></p>
     <div class="facts" id="rFacts"></div>
     <details><summary class="label">TENR iterations</summary>
@@ -307,20 +310,24 @@ body,.wrap,section,html{transition:background-color .25s ease-out,color .25s eas
     <div class="rule"><span>06 · Discussion</span><span>6 / 6</span></div>
     <h2>Why not run at the limit?</h2>
     <div class="facts inv">
-      <div><span class="fnum">442.6 MW</span><span class="label">collapse</span></div>
-      <div><span class="fnum" id="vBand">51 MW</span><span class="label">socket passes 242 V</span></div>
-      <div><span class="fnum">205.6 MW</span><span class="label">one line down</span></div>
+      <div><span class="fnum" id="dCollapse">26.1 MW</span><span class="label">collapse</span></div>
+      <div><span class="fnum" id="vBand">7.3 MW</span><span class="label">socket below 209 V</span></div>
+      <div><span class="fnum" id="dLine">15.4 MW</span><span class="label">line 1–3 down</span></div>
     </div>
-    <p>Which limit would you respect? Hands up: guessed &lt;100, 100–400, &gt;400 MW?</p>
+    <p>Which limit would you respect, and how much margin would you keep? Hands up: who guessed below 10 MW, 10–30 MW, above 30 MW for the town?</p>
   </section>
 
-  <p class="foot">1 pu = 10 MW, 10 kV, 230 V at the socket · Week 3 network: lines 1–2 0.01+j0.03, 1–3 0.03+j0.04, 2–3 0.02+j0.04 pu; bus 2 PV 1.0 pu, +0.2/−0.1; town 0.5+j0.1 · polar Newton–Raphson + TENR, computed in your browser.</p>
+  <p class="foot">1 pu = 10 MW, 10 kV, 220 V at the socket (Z<sub>base</sub> = 10 Ω) · 10 kV overhead lines, wire AC-120/19: r₀ = 0.245 Ω/km, x₀ = 0.40 Ω/km · lines 1–2 4 km (0.98 + j1.6 Ω), 1–3 6 km (1.47 + j2.4 Ω), 2–3 5 km (1.23 + j2.0 Ω); one-line case 10 km (2.45 + j4.0 Ω) · bus 2 PV 1.0 pu, +2/−1 MW; town 5 MW + j1 Mvar · Week 3 topology, polar Newton–Raphson + TENR, computed in your browser.</p>
 </div>
 <script>
 // Three-bus power flow (Week 3), polar Newton-Raphson and TENR
+// 10 kV overhead lines, wire AC-120/19: r0 = 0.245 Ohm/km, x0 = 0.40 Ohm/km; Z_base = (10 kV)^2 / 10 MVA = 10 Ohm
+const R0 = 0.245, X0 = 0.40, ZB = 10;
+const LEN = [4, 6, 5];   // km: lines 1-2, 1-3, 2-3
+const LINES = [[0,1],[0,2],[1,2]].map(([i, j], k) => [i, j, [R0 * LEN[k] / ZB, X0 * LEN[k] / ZB]]);
 // cfg.on: which of the lines 1-2, 1-3, 2-3 are in service; P3 spec = cfg.a + cfg.s * lambda
 const makeGrid = (cfg = {on: [1, 1, 1], s: 1, a: -0.5}) => {
-  const lines = [[0,1,[0.01,0.03]],[0,2,[0.03,0.04]],[1,2,[0.02,0.04]]].filter((_, k) => cfg.on[k]);
+  const lines = LINES.filter((_, k) => cfg.on[k]);
   const G = [[0,0,0],[0,0,0],[0,0,0]], B = [[0,0,0],[0,0,0],[0,0,0]];
   for (const [i,j,[r,x]] of lines) {
     const d = r*r + x*x, g = r/d, b = -x/d;           // y = 1/Z
@@ -415,15 +422,15 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
   const $ = id => document.getElementById(id);
   const deg = r => r * 180 / Math.PI;
   const fmt = (v, n) => v.toFixed(n).replace('-', '−');
-  const SB = 10, SOCK = 230;   // 1 pu = 10 MW, 1 pu voltage = 10 kV = 230 V at the socket
+  const SB = 10, SOCK = 220;   // 1 pu = 10 MW, 1 pu voltage = 10 kV = 220 V at the socket
   const homes = mw => Math.round(mw * 1000 / 2 / 100) * 100;   // about 2 kW per home in the evening
   const nf = n => n.toLocaleString('en-US');
   const LINE_NAMES = ['1–2', '1–3', '2–3'];
 
   // scenarios: lambda is the farm output (sun) or the town demand (heat), in pu
   const SC = {
-    sun:  {s: 1, a: -0.5, lam0: 0.2, max: 60, axis: 50, what: 'Farm output', axisLabel: 'Farm output (MW)'},
-    heat: {s: -1, a: 0.2, lam0: 0.5, max: 20, axis: 16, what: 'Town demand', axisLabel: 'Town demand (MW)'},
+    sun:  {s: 1, a: -0.5, lam0: 0.2, max: 12, axis: 10, what: 'Farm output', axisLabel: 'Farm output (MW)'},
+    heat: {s: -1, a: 0.2, lam0: 0.5, max: 6, axis: 4, what: 'Town demand', axisLabel: 'Town demand (MW)'},
   };
   let scen = 'sun', on = [1, 1, 1];
   let baseSign = 1, M, base, curve, iNose, detBase, cur, maxSeen, revealed, tenrRes;
@@ -450,10 +457,15 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     maxSeen = c.lam0; revealed = false; tenrRes = null; $('reveal').hidden = true;
   }
 
-  // the voltage band for the discussion box, from the intact sunny network
-  { const G = makeGrid({on: [1, 1, 1], s: 1, a: -0.5}), b = G.newton([0, 0, 1], 0.2);
-    const hit = traceCurve(G, {x: b.x, lam: 0.2}, 1).find(p => p.V >= 1.05);
-    if (hit) $('vBand').textContent = Math.round(hit.P * SB) + ' MW'; }
+  // numbers for the discussion box, from the demand case (intact, and with line 1–3 out)
+  function limitOf(G, lam0) { let P = lam0, x = G.newton([0, 0, 1], lam0).x;
+    for (;;) { const r = G.newton(x, P + 1); if (!r.ok) break; P += 1; x = r.x; }
+    return G.tenr(x, P).z[3]; }
+  { const G = makeGrid({on: [1, 1, 1], s: -1, a: 0.2}), b = G.newton([0, 0, 1], 0.5);
+    const hit = traceCurve(G, {x: b.x, lam: 0.5}, -1).find(p => p.V < 0.95);
+    if (hit) $('vBand').textContent = (hit.P * SB).toFixed(1) + ' MW';
+    $('dCollapse').textContent = (limitOf(G, 0.5) * SB).toFixed(1) + ' MW';
+    $('dLine').textContent = (limitOf(makeGrid({on: [1, 0, 1], s: -1, a: 0.2}), 0.5) * SB).toFixed(1) + ' MW'; }
 
   // ---- Y matrix print (Week 1 card) ----
   { const G = makeGrid();
@@ -479,11 +491,13 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
   const verdict = (g, limMW) => { const e = (g - limMW) / limMW * 100;
     return 'Your guess ' + nf(g) + ' MW · ' + (Math.abs(e) < 10 ? 'within ' + Math.ceil(Math.abs(e)) + ' %' : (e < 0 ? Math.round(-e) + ' % too low' : Math.round(e) + ' % too high')); };
   const guesses = {};           // MW per case key; null = skipped
-  const GQ = {gen: ['Guess first: how many MW can the farm push out?', 5, 1000, 5, 100],
-              load: ['Guess first: how many MW can the town use?', 5, 400, 5, 50],
-              line: ['Guess first: with one line broken, how many MW can the town use?', 5, 400, 5, 50]};
+  const GQ = {gen: ['Guess first: how many MW can the farm push out?', 5, 300, 1, 50],
+              load: ['Guess first: how many MW can the town use?', 1, 100, 1, 20],
+              line: ['Guess first: with one line broken, how many MW can the town use?', 1, 100, 1, 15]};
   const unlock = msg => { pS.disabled = false; $('lockNote').textContent = msg; };
-  const gb = guessBox('g', mw => { guesses[caseKey] = mw; gb.locked(mw); unlock('Drag →'); drawCurve(); });
+  const gb = guessBox('g', mw => { guesses[caseKey] = mw; gb.locked(mw); unlock('Drag →');
+    if (tbDark) tbUpdate(TB_START);   // a new case starts on a lit page
+    drawCurve(); });
   function syncGuess() {
     if (caseKey in guesses) { gb.locked(guesses[caseKey]); unlock('Drag →'); }
     else { gb.reset(...GQ[caseKey]); pS.disabled = true; $('lockNote').textContent = 'Lock or skip your guess to start.'; }
@@ -505,7 +519,7 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     return {x, P, it, ok: true};
   }
 
-  // what people notice at home, from the socket voltage (EN 50160 allows 207–253 V)
+  // what people notice at home, from the socket voltage: normal 209–231 V (±5 %), allowed 198–242 V (±10 %)
   const ICON = {
     lamp: '<path d="M22 4a13 13 0 0 0-7 24c2 2 3 4 3 6h8c0-2 1-4 3-6a13 13 0 0 0-7-24z"/><rect x="17" y="36" width="10" height="4"/>',
     fridge: '<rect x="11" y="3" width="22" height="38" rx="2"/><rect x="11" y="15" width="22" height="2" fill="var(--paper)"/><rect x="14" y="8" width="2" height="5" fill="var(--paper)"/><rect x="14" y="20" width="2" height="7" fill="var(--paper)"/>',
@@ -514,35 +528,35 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
   function homesState(v) {
     if (v == null) return [['lamp', 'out', 'Off'], ['fridge', 'out', 'Off'], ['solar', 'out', 'Off']];
     return [
-      ['lamp', v > 253 || v < 207 ? 'bad' : v > 242 || v < 218 ? 'warn' : 'ok', v > 253 ? 'Too high' : v > 242 ? 'High' : v >= 218 ? 'Normal' : v >= 207 ? 'Dim' : 'Flicker'],
-      ['fridge', v < 207 ? 'bad' : v > 253 || v < 218 ? 'warn' : 'ok', v < 207 ? 'Tripped' : v < 218 ? 'Straining' : v > 253 ? 'Stressed' : 'Normal'],
-      ['solar', v > 253 ? 'bad' : 'ok', v > 253 ? 'Disconnected' : 'On'],
+      ['lamp', v > 242 || v < 198 ? 'bad' : v > 231 || v < 209 ? 'warn' : 'ok', v > 242 ? 'Too high' : v > 231 ? 'High' : v >= 209 ? 'Normal' : v >= 198 ? 'Dim' : 'Flicker'],
+      ['fridge', v < 198 ? 'bad' : v > 242 || v < 209 ? 'warn' : 'ok', v < 198 ? 'Tripped' : v < 209 ? 'Straining' : v > 242 ? 'Stressed' : 'Normal'],
+      ['solar', v > 242 ? 'bad' : 'ok', v > 242 ? 'Disconnected' : 'On'],
     ];
   }
   function showHomes(v) {
     const names = {lamp: 'Lights', fridge: 'Fridge · AC', solar: 'Rooftop solar'};
     $('homesList').innerHTML = homesState(v).map(([ic, k, w]) => {
       const col = k === 'bad' ? 'var(--red)' : k === 'out' ? 'var(--grey)' : 'var(--ink)';
-      const flick = ic === 'lamp' && k === 'bad' && v != null && v < 207 ? ' class="flick"' : '';
+      const flick = ic === 'lamp' && k === 'bad' && v != null && v < 198 ? ' class="flick"' : '';
       return `<div class="${k}"><svg viewBox="0 0 44 44"${flick} style="fill:${col}">${ICON[ic]}</svg><span class="label">${names[ic]}</span><span class="w">${w}</span></div>`;
     }).join('');
   }
 
-  // ---- socket-voltage dial, 150–290 V over a half circle ----
-  const GA = {min: 150, max: 290, cx: 100, cy: 104, r: 84};
+  // ---- socket-voltage dial, 120–270 V over a half circle ----
+  const GA = {min: 120, max: 270, cx: 100, cy: 104, r: 84};
   const gAng = v => Math.PI * (1 - (Math.max(GA.min, Math.min(GA.max, v)) - GA.min) / (GA.max - GA.min));
   const gPt = (v, r) => [GA.cx + r * Math.cos(gAng(v)), GA.cy - r * Math.sin(gAng(v))];
   function drawGauge(v, id = 'gauge') {
     const g = $(id); g.innerHTML = '';
     const arc = (v0, v1, col, w) => { const [x0, y0] = gPt(v0, GA.r), [x1, y1] = gPt(v1, GA.r);
       el('path', {d: `M${x0} ${y0} A${GA.r} ${GA.r} 0 0 1 ${x1} ${y1}`, fill: 'none', stroke: col, 'stroke-width': w}, g); };
-    arc(150, 207, 'var(--red)', 12); arc(207, 218, 'var(--band)', 12); arc(218, 242, 'var(--ink)', 12); arc(242, 253, 'var(--band)', 12); arc(253, 290, 'var(--red)', 12);
-    [150, 207, 230, 253, 290].forEach(t => { const [x, y] = gPt(t, GA.r - 18);
+    arc(120, 198, 'var(--red)', 12); arc(198, 209, 'var(--band)', 12); arc(209, 231, 'var(--ink)', 12); arc(231, 242, 'var(--band)', 12); arc(242, 270, 'var(--red)', 12);
+    [120, 198, 220, 242, 270].forEach(t => { const [x, y] = gPt(t, GA.r - 18);
       el('text', {x, y: y + 3, fill: 'var(--grey)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 9, 'text-anchor': 'middle'}, g).textContent = t; });
     if (v != null) { const [x, y] = gPt(v, GA.r - 4);
       el('line', {x1: GA.cx, y1: GA.cy, x2: x, y2: y, stroke: 'var(--ink)', 'stroke-width': 4, 'stroke-linecap': 'round'}, g); }
     el('circle', {cx: GA.cx, cy: GA.cy, r: 6, fill: 'var(--red)'}, g);
-    el('text', {x: GA.cx, y: GA.cy - 22, fill: v == null || v > 253 || v < 207 ? 'var(--red)' : 'var(--ink)', 'font-family': 'Inter Tight, sans-serif', 'font-weight': 800, 'font-size': 26, 'text-anchor': 'middle', 'letter-spacing': -1}, g).textContent = v == null ? '0 V' : Math.round(v) + ' V';
+    el('text', {x: GA.cx, y: GA.cy - 22, fill: v == null || v > 242 || v < 198 ? 'var(--red)' : 'var(--ink)', 'font-family': 'Inter Tight, sans-serif', 'font-weight': 800, 'font-size': 26, 'text-anchor': 'middle', 'letter-spacing': -1}, g).textContent = v == null ? '0 V' : Math.round(v) + ' V';
     el('text', {x: GA.cx, y: GA.cy + 16, fill: 'var(--grey)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 9, 'text-anchor': 'middle', 'letter-spacing': 1}, g).textContent = 'SOCKET IN TOWN';
   }
 
@@ -651,7 +665,7 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
   let glow = 1;
   function setOut() { document.documentElement.classList.toggle('out', dark || tbDark); }
   function setNet(x, dj, isDark) {
-    if (x) { const v = x[2] * SOCK; glow = v >= 218 ? 1 : Math.max(0.15, (v - 130) / 88); }
+    if (x) { const v = x[2] * SOCK; glow = v >= 209 ? 1 : Math.max(0.15, (v - 120) / 89); }
     dark = isDark; setOut();
     windows.forEach(w => { w.style.fill = isDark ? DARKWIN : LIT; w.style.opacity = isDark ? 1 : glow; });
     steam.forEach(s => s.setAttribute('opacity', isDark ? 0 : 1));
@@ -692,7 +706,7 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
       el('line', {x1: m.l, x2: W - m.r, y1: sy(V), y2: sy(V), stroke: 'var(--band)', 'stroke-width': 1}, C);
       el('text', {x: m.l - 6, y: sy(V) + 4, fill: 'var(--grey)', 'font-size': 10, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': 'end'}, C).textContent = volts;
     }
-    const tick = PX > 20 ? 10 : 4;
+    const tick = PX > 8 ? 2 : 1;
     for (let P = 0; P <= PX + 1e-9; P += tick)
       el('text', {x: sx(P), y: H - m.b + 16, fill: 'var(--grey)', 'font-size': 10, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': 'middle'}, C).textContent = Math.round(P * SB);
     el('text', {x: (m.l + W - m.r) / 2, y: H - 4, fill: 'var(--grey)', 'font-size': 11, 'font-family': 'IBM Plex Mono, monospace', 'text-anchor': 'middle'}, C).textContent = SC[scen].axisLabel;
@@ -740,9 +754,9 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
 
   // ---- scenario chips and line switches ----
   const CASES = {
-    gen:  {scen: 'sun',  on: [1, 1, 1], hl: 'farm', change: 'Farm output at the town, 2 → 600 MW', fixed: 'Town demand 5 MW · all three lines in service'},
-    load: {scen: 'heat', on: [1, 1, 1], hl: 'town', change: 'Town demand, 5 → 200 MW', fixed: 'Farm output 2 MW · all three lines in service'},
-    line: {scen: 'heat', on: [1, 0, 1], hl: 'town', change: 'Town demand, 5 → 200 MW, with one line broken', fixed: 'Farm output 2 MW · line 1–3 out (pick another line below)'},
+    gen:  {scen: 'sun',  on: [1, 1, 1], hl: 'farm', change: 'Farm output at the town, 2 → 120 MW', fixed: 'Town demand 5 MW · all three lines in service'},
+    load: {scen: 'heat', on: [1, 1, 1], hl: 'town', change: 'Town demand, 5 → 60 MW', fixed: 'Farm output 2 MW · all three lines in service'},
+    line: {scen: 'heat', on: [1, 0, 1], hl: 'town', change: 'Town demand, 5 → 60 MW, with one line broken', fixed: 'Farm output 2 MW · line 1–3 out (pick another line below)'},
   };
   let caseKey = 'load';
   function setScenario(key) {
@@ -768,12 +782,14 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     on = [1, 1, 1]; on[k] = 0; syncTrips(); rebuild(); update(P);   // exactly one line is broken
   }));
 
-  // ---- two-bus case (Week 2): Vs = 10 kV, line X = 5 Ω = 0.5 pu, R = 0, town load P + j0 ----
-  // V² = (Vs² ± √(Vs⁴ − 4X²P²)) / 2 in pu; the nose is at P_max = Vs²/(2X) = 1 pu = 10 MW
-  const TB = {X: 0.5, Vs: 1};
-  const tbV = (P, upper = true) => { const D = TB.Vs ** 4 - 4 * TB.X ** 2 * P * P; if (D < 0) return null;
-    return Math.sqrt((TB.Vs ** 2 + (upper ? 1 : -1) * Math.sqrt(D)) / 2); };
-  const tbPmax = TB.Vs ** 2 / (2 * TB.X);
+  // ---- two-bus case (Week 2): Vs = 10 kV, line R + jX, town load P + j0 ----
+  // V² = ((Vs² − 2RP) ± √((Vs² − 2RP)² − 4|Z|²P²)) / 2 in pu; the nose is at P_max = Vs² / (2(R + |Z|))
+  // 10 km of the same AC-120/19 wire: Z = 2.45 + j4.0 Ohm = 0.245 + j0.40 pu
+  const TB = {R: 0.245, X: 0.40, Vs: 1}; TB.Z = Math.hypot(TB.R, TB.X);
+  const tbPmax = TB.Vs ** 2 / (2 * (TB.R + TB.Z));
+  const tbV = (P, upper = true) => { const a = TB.Vs ** 2 - 2 * TB.R * P; let D = a * a - 4 * TB.Z ** 2 * P * P;
+    if (D < 0) { if (P - tbPmax > 1e-9) return null; D = 0; }
+    return Math.sqrt((a + (upper ? 1 : -1) * Math.sqrt(D)) / 2); };
   { // scene: plant — one line — town
     const s = $('tbNet');
     el('path', {d: 'M8 96 Q20 70 14 44 L40 44 Q34 70 46 96 Z M42 96 Q54 70 48 52 L72 52 Q66 70 78 96 Z', fill: INK}, s);
@@ -793,20 +809,22 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     el('text', {x: 4, y: 162, fill: 'var(--grey)', 'font-family': FM, 'font-size': 9.5, 'letter-spacing': 1}, s).textContent = '10 kV';
     el('text', {x: 356, y: 150, fill: INK, 'font-family': FD, 'font-weight': 800, 'font-size': 14, 'text-anchor': 'end'}, s).textContent = 'Town';
     el('text', {x: 356, y: 162, fill: 'var(--grey)', 'font-family': FM, 'font-size': 9.5, 'letter-spacing': 1, 'text-anchor': 'end'}, s).textContent = 'YOU SET THE DEMAND';
-    el('text', {x: 175, y: 96, fill: INK, 'font-family': FM, 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle'}, s).textContent = 'one line · X = 5 Ω';
+    el('text', {x: 175, y: 96, fill: INK, 'font-family': FM, 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle'}, s).textContent = 'one line · 10 km · 2.45 + j4.0 Ω';
   }
-  let tbP = 0.5, tbMax = 0.5, tbDark = false, tbOff = 0, tbGuess;
+  const PXTB = 0.9, TB_START = 0.1;
+  let tbP = TB_START, tbMax = TB_START, tbDark = false, tbOff = 0, tbGuess;
   const tgb = guessBox('tg', mw => { tbGuess = mw; tgb.locked(mw); $('tbSlider').disabled = false; tbChart(); });
-  tgb.reset('Guess first: how many MW can one line bring to the town?', 1, 30, 0.5, 5);
+  tgb.reset('Guess first: how many MW can one line bring to the town?', 0.5, 20, 0.5, 3);
+  $('tbOutMW').textContent = (tbPmax * SB).toFixed(1);
   function tbChart() {
     const C2 = $('tbCurve'); C2.innerHTML = '';
-    const W = 360, H = 220, m = {l: 40, r: 12, t: 12, b: 34}, PX = 1.2;
+    const W = 360, H = 220, m = {l: 40, r: 12, t: 12, b: 34}, PX = 0.9;
     const sx = P => m.l + P / PX * (W - m.l - m.r), sy = V => H - m.b - V / 1.15 * (H - m.t - m.b);
     el('rect', {x: m.l, y: sy(1.05), width: W - m.l - m.r, height: sy(0.95) - sy(1.05), fill: 'var(--band)'}, C2);
     for (let volts = 0; volts <= 250; volts += 50) {
       el('line', {x1: m.l, x2: W - m.r, y1: sy(volts / SOCK), y2: sy(volts / SOCK), stroke: 'var(--band)', 'stroke-width': 1}, C2);
       el('text', {x: m.l - 6, y: sy(volts / SOCK) + 4, fill: 'var(--grey)', 'font-size': 10, 'font-family': FM, 'text-anchor': 'end'}, C2).textContent = volts; }
-    for (let P = 0; P <= PX + 1e-9; P += 0.2)
+    for (let P = 0; P <= PX + 1e-9; P += 0.1)
       el('text', {x: sx(P), y: H - m.b + 16, fill: 'var(--grey)', 'font-size': 10, 'font-family': FM, 'text-anchor': 'middle'}, C2).textContent = Math.round(P * SB);
     el('text', {x: (m.l + W - m.r) / 2, y: H - 4, fill: 'var(--grey)', 'font-size': 11, 'font-family': FM, 'text-anchor': 'middle'}, C2).textContent = 'Town demand (MW)';
     const up = [], lo = [];
@@ -817,7 +835,7 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
       el('polyline', {points: lo.map(([p, v]) => sx(p) + ',' + sy(v)).join(' '), fill: 'none', stroke: 'var(--grey)', 'stroke-width': 2, 'stroke-dasharray': '5 5'}, C2);
       el('line', {x1: sx(tbPmax), x2: sx(tbPmax), y1: m.t, y2: H - m.b, stroke: RED, 'stroke-width': 2, 'stroke-dasharray': '4 4'}, C2);
       el('circle', {cx: sx(tbPmax), cy: sy(tbV(tbPmax)), r: 7, fill: RED}, C2);
-      el('text', {x: sx(tbPmax) - 10, y: sy(tbV(tbPmax)) + 4, fill: RED, 'font-weight': 700, 'font-size': 11, 'font-family': FM, 'text-anchor': 'end'}, C2).textContent = 'nose · 10 MW · 163 V';
+      el('text', {x: sx(tbPmax) - 10, y: sy(tbV(tbPmax)) + 4, fill: RED, 'font-weight': 700, 'font-size': 11, 'font-family': FM, 'text-anchor': 'end'}, C2).textContent = 'nose · ' + (tbPmax * SB).toFixed(1) + ' MW · ' + Math.round(tbV(tbPmax) * SOCK) + ' V';
     }
     if (tbGuess != null) { const gx = sx(Math.min(tbGuess / SB, PX));
       el('line', {x1: gx, x2: gx, y1: m.t, y2: H - m.b, stroke: 'var(--ink)', 'stroke-width': 1.5, 'stroke-dasharray': '2 4'}, C2);
@@ -826,17 +844,17 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
     if (v != null) el('circle', {cx: sx(tbP), cy: sy(v), r: 7, fill: 'var(--paper)', stroke: 'var(--ink)', 'stroke-width': 4}, C2);
   }
   function tbUpdate(P) {
-    tbP = Math.max(0, Math.min(1.2, P)); $('tbSlider').value = tbP * SB; tbMax = Math.max(tbMax, tbP);
+    tbP = Math.max(0, Math.min(PXTB, P)); $('tbSlider').value = tbP * SB; tbMax = Math.max(tbMax, tbP);
     const v = tbV(tbP), volts = v == null ? null : v * SOCK;
     $('tbVal').textContent = (tbP * SB).toFixed(1); $('tbHomes').textContent = '≈ ' + nf(homes(tbP * SB)) + ' homes';
     drawGauge(volts, 'tbGauge');
     tbDark = v == null; setOut();
-    const glow = volts == null ? 1 : volts >= 218 ? 1 : Math.max(0.15, (volts - 120) / 98);
+    const glow = volts == null ? 1 : volts >= 209 ? 1 : Math.max(0.15, (volts - 110) / 99);
     TB.win.forEach(w => { w.style.fill = tbDark ? DARKWIN : LIT; w.style.opacity = tbDark ? 1 : glow; });
     TB.line.style.stroke = tbDark ? '#4A4843' : RED; TB.flow.style.stroke = tbDark ? 'transparent' : PAPER;
     const st = $('tbStatus');
     if (tbDark) { st.className = 'status down'; st.textContent = 'No solution'; }
-    else if (volts < 207) { st.className = 'status warn'; st.textContent = 'Voltage too low'; }
+    else if (volts < 209) { st.className = 'status warn'; st.textContent = 'Voltage too low'; }
     else { st.className = 'status'; st.textContent = 'OK'; }
     $('tbOut').hidden = !tbDark;
     $('tbVerdict').textContent = tbDark && tbGuess != null ? ' · ' + verdict(tbGuess, tbPmax * SB) : '';
@@ -845,8 +863,8 @@ if (typeof module !== 'undefined') module.exports = makeGrid;
   $('tbSlider').addEventListener('input', e => tbUpdate(+e.target.value / SB));
   document.querySelectorAll('[data-tb]').forEach(b => b.addEventListener('click', () => { if (!$('tbSlider').disabled) tbUpdate(tbP + +b.dataset.tb / SB); }));
   (function tbTick() { if (!tbDark && !reduce) { tbOff -= 0.4 + tbP * 3; TB.flow.setAttribute('stroke-dashoffset', tbOff); } requestAnimationFrame(tbTick); })();
-  tbUpdate(0.5);
+  tbUpdate(TB_START);
 
   setScenario('load');
 })();
-</script>
+</script></body></html>
